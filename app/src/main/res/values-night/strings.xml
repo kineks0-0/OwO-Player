@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="title_home">ome</string>
+    <string name="title_albums">Albums</string>
+    <string name="title_playing">laying</string>
+    <string name="title_setting">etting</string>
+</resources>

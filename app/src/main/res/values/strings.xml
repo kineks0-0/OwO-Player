@@ -1,0 +1,26 @@
+<resources>
+    <string name="app_name">OwO Player</string>
+    <string name="title_home">Home</string>
+    <string name="title_albums">Albums</string>
+    <string name="title_playing">Playing</string>
+    <string name="title_setting">Setting</string>
+    <string name="unknown">Unknown</string>
+    <string name="albums_art">AlbumsArt</string>
+
+
+
+    <string name="playBegins">Playing</string>
+    <string name="playStop">PlayStop</string>
+    <string name="playEnd">PlayEnd</string>
+    <string name="playPause">PlayPause</string>
+    <string name="playContinues">PlayContinues</string>
+
+    <string name="playMode">Play Mode</string>
+    <string name="SongLoop">Song Loop</string>
+    <string name="ListPlay">List Play</string>
+    <string name="ListLoop">List Loop</string>
+    <string name="RandomPlay">Random Play</string>
+    <string name="next_play">next play</string>
+    <string name="previous_play">previous play</string>
+    <string name="playing">playing</string>
+</resources>
