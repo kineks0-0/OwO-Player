@@ -172,7 +172,7 @@ class MainActivity : AppCompatActivity() {
             return when (position) {
                 0 -> MusicFragment.title
                 1 -> AlbumFragment.title
-                //2 -> playingViewModel.playingFragmentTitle.value
+                2 -> playingViewModel.playingFragmentTitle.value
                 3 -> SettingFragment.title
                 else -> "OBJECT ${(position + 1)}"
             } ?: getString(R.string.app_name)
