@@ -3,8 +3,10 @@ package com.tencent.mm.data.locally
 import android.content.Context
 import android.media.AudioManager
 import android.media.AudioManager.OnAudioFocusChangeListener
+import android.media.MediaDataSource
 import android.media.MediaPlayer
 import android.media.MediaScannerConnection
+import android.net.Uri
 import android.os.PowerManager
 import android.util.Log
 import androidx.databinding.ObservableField
@@ -119,7 +121,7 @@ object MusicPlay {
             } else {
                 field = 0
             }
-        val songList: ArrayList<Song> = ArrayList()
+        var songList: ArrayList<Song> = ArrayList()
         val playList: ArrayList<Song> = ArrayList()
         //var auto: Boolean = false
 
@@ -138,37 +140,46 @@ object MusicPlay {
             val where = getPlayingSong(0)
             index = 0
 
+            playList.clear()
+            playList.addAll(songList)
             when (playModeID) {
                 SongLoop -> {
-                    playList.clear()
-                    playList.addAll(songList)
                     if (where?.file?.get()?.exists() == true)
                         playList.indexOf(where)
                             .let {
-                                if (it != -1) index = it
+                                index = if (it != -1) it
+                                else {
+                                    playList.remove(where)
+                                    playList.add(index, where)
+                                    index
+                                }
                             }
                 }
                 ListLoop -> {
-                    playList.clear()
-                    playList.addAll(songList)
                     if (where?.file?.get()?.exists() == true)
                         playList.indexOf(where)
                             .let {
-                                if (it != -1) index = it
+                                index = if (it != -1) it
+                                else {
+                                    playList.remove(where)
+                                    playList.add(index, where)
+                                    index
+                                }
                             }
                 }
                 ListPlay -> {
-                    playList.clear()
-                    playList.addAll(songList)
                     if (where?.file?.get()?.exists() == true)
                         playList.indexOf(where)
                             .let {
-                                if (it != -1) index = it
+                                index = if (it != -1) it
+                                else {
+                                    playList.remove(where)
+                                    playList.add(index, where)
+                                    index
+                                }
                             }
                 }
                 RandomPlay -> {
-                    playList.clear()
-                    playList.addAll(songList)
                     playList.shuffle()
                     if (where?.file?.get()?.exists() == true) {
                         playList.remove(where)
@@ -181,8 +192,7 @@ object MusicPlay {
         }
 
         override fun update(songList: ArrayList<Song>, index: Int) {
-            this.songList.clear()
-            this.songList.addAll(songList)
+            this.songList = songList
             this.index = index
             switchPlayMode(playModeID)
         }
@@ -200,8 +210,7 @@ object MusicPlay {
             } else {
                 index = 0
             }
-            this.songList.clear()
-            this.songList.addAll(songList)
+            this.songList = songList
             switchPlayMode(playModeID)
         }
 
@@ -247,7 +256,11 @@ object MusicPlay {
             onPlayListener.onRest()
 
             try {
-                mediaPlayer.setDataSource(song.file.get()!!.absolutePath)
+                val file = song.file.get()!!
+                mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC)
+                //mediaPlayer.setDataSource(file.inputStream().fd,0,file.length())
+                mediaPlayer.setDataSource(file.absolutePath)
+
             } catch (e: Exception) {
                 Log.e(this@MusicPlay.toString(), e.message, e)
                 //isPlaying = false
@@ -340,7 +353,10 @@ object MusicPlay {
 
         override fun getSong(index: Int): Song? {
             if (index == -1) {
-                if (playList.size == 0) return null else playList[0]
+                return if (playList.size == 0)
+                    return null
+                else
+                    playList[0]
             }
             return playList[index]
         }

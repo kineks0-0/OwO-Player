@@ -47,7 +47,7 @@ class PlayingFragment : Fragment(), OnPageSelectedChange {
                         .load(
                             song.let {
                                 if (it != null)
-                                    return@let MediaStoreProvider.getArtByteArray(it)
+                                    return@let MediaStoreProvider.getArtUri(it)
                                 else
                                     return@let MediaStoreProvider.UNKNOWN_ART_RES
                             }
@@ -62,15 +62,12 @@ class PlayingFragment : Fragment(), OnPageSelectedChange {
 
     }
 
+
     // This property is only valid between onCreateView and
-    // onDestroyView.
-    private var _binding: PlayingFragmentBinding? = null
+    private var _binding: PlayingFragmentBinding? = null // onDestroyView.
     private val binding get() = _binding!!
     private lateinit var viewModel: PlayingViewModel
 
-    private val requestManager: RequestManager by lazy {
-        Glide.with(this)
-    }
 
 
     override fun onCreateView(
@@ -145,7 +142,10 @@ class PlayingFragment : Fragment(), OnPageSelectedChange {
             }
 
         }
+    }
 
+    override fun onResume() {
+        super.onResume()
         MusicPlay.onPlayListener.onViewRedraw()
     }
 

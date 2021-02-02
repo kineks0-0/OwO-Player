@@ -26,6 +26,9 @@ class MusicItemRecyclerViewAdapter(private val songs: List<Song>) :
     var onClickListener: OnClick = object : OnClick {
         override fun onClick(position: Int, holder: ViewHolder) {}
     }
+    var onKeyListener =  View.OnKeyListener { v, keyCode, event ->
+        false
+    }
 
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -41,6 +44,9 @@ class MusicItemRecyclerViewAdapter(private val songs: List<Song>) :
         }
         binding.clickLayout.setOnClickListener {
             onClickListener.onClick(holder.adapterPosition, holder)
+        }
+        binding.clickLayout.setOnKeyListener { v, keyCode, event ->
+            onKeyListener.onKey(holder.itemView,keyCode,event)
         }
         return holder
     }
@@ -83,7 +89,7 @@ class MusicItemRecyclerViewAdapter(private val songs: List<Song>) :
         fun setSongImage(imageView: ImageView, song: Song) {
             GlobalScope.launch(Dispatchers.Main) {
                 Glide.with(imageView.context)
-                    .load(MediaStoreProvider.getArtByteArray(song))
+                    .load(MediaStoreProvider.getArtUri(song))
                     .placeholder(R.drawable.unknown)
                     .error(R.drawable.unknown)
                     .transform(CenterCrop(), RoundedCorners(4))

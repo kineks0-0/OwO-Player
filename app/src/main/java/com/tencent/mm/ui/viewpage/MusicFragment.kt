@@ -2,6 +2,7 @@ package com.tencent.mm.ui.viewpage
 
 import android.os.Bundle
 import android.util.Log
+import android.view.KeyEvent
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -16,6 +17,7 @@ import com.tencent.mm.R
 import com.tencent.mm.data.locally.MediaStoreProvider
 import com.tencent.mm.data.locally.MusicPlay
 import com.tencent.mm.getContext
+import kotlin.concurrent.thread
 
 
 class MusicFragment : Fragment(), OnPageSelectedChange {
@@ -49,6 +51,49 @@ class MusicFragment : Fragment(), OnPageSelectedChange {
                     MusicItemRecyclerViewAdapter(songs).let {
                         adapter = it
                         it.onClickListener = viewModel
+                        it.onKeyListener = View.OnKeyListener { v, keyCode, event ->
+                            when (keyCode) {
+                                KeyEvent.KEYCODE_3 -> {
+                                    var position = getChildAdapterPosition(v)
+                                    position -= view.childCount + 1
+                                    scrollToPosition(position)
+                                    thread {
+                                        Thread.sleep(300)
+                                        v.post {
+                                            requestFocus()
+                                            scrollToPosition(position)
+                                            findViewHolderForAdapterPosition(position)
+                                                ?.itemView?.requestFocus()
+                                                ?: view.findViewHolderForPosition(position)
+                                                    ?.itemView?.requestFocus()
+                                                ?: Log.w(this@MusicFragment::class.java.toString(),
+                                                    "item == null")
+                                        }
+                                    }
+                                    true
+                                }
+                                KeyEvent.KEYCODE_9 -> {
+                                    var position = getChildAdapterPosition(v)
+                                    position += view.childCount - 1
+                                    scrollToPosition(position)
+                                    thread {
+                                        Thread.sleep(300)
+                                        v.post {
+                                            requestFocus()
+                                            scrollToPosition(position)
+                                            findViewHolderForAdapterPosition(position)
+                                                ?.itemView?.requestFocus()
+                                                ?: view.findViewHolderForPosition(position)
+                                                    ?.itemView?.requestFocus()
+                                                ?: Log.w(this@MusicFragment::class.java.toString(),
+                                                    "item == null")
+                                        }
+                                    }
+                                    true
+                                }
+                                else -> false
+                            }
+                        }
                     }
                     MusicPlay.playMode.update(songs)
                 }
@@ -69,6 +114,10 @@ class MusicFragment : Fragment(), OnPageSelectedChange {
                         }
                     }
                 })
+                /*view.setOnFocusChangeListener { v, hasFocus ->
+                    if (hasFocus)
+                        requestFocus()
+                }*/
             }
         }
         return view

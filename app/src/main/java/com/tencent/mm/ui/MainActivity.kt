@@ -4,6 +4,7 @@ package com.tencent.mm.ui
 import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
+import android.view.KeyEvent
 import android.view.View
 import android.widget.ImageView
 import androidx.appcompat.app.AppCompatActivity
@@ -33,7 +34,6 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
         playingViewModel = ViewModelProvider(this).get(PlayingViewModel::class.java)
 
         binding.navView.setOnNavigationItemSelectedListener { item ->
@@ -46,6 +46,20 @@ class MainActivity : AppCompatActivity() {
             //binding.viewPage.requestFocus()
             true
         }
+
+        /*binding.view.isFocusable = true
+        binding.view.isClickable = true
+        binding.view.setOnFocusChangeListener { v, hasFocus ->
+            if (hasFocus)
+                thread {
+                    Thread.sleep(500)
+                    v.post {
+                        binding.viewPage.requestFocus()
+                        pagerAdapter.getItem(binding.viewPage.currentItem).requireView().requestFocus()
+                    }
+                }
+
+        }*/
 
         pagerAdapter = PagerAdapter(supportFragmentManager)
         binding.viewPage.adapter = pagerAdapter
@@ -130,6 +144,10 @@ class MainActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
+    }
+
+    override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
+        return playingViewModel.onKeyDown(keyCode,event)
     }
 
 

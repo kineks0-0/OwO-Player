@@ -1,5 +1,6 @@
 package com.tencent.mm.ui.viewpage
 
+import android.view.KeyEvent
 import android.view.View
 import androidx.databinding.ObservableField
 import androidx.lifecycle.MutableLiveData
@@ -83,6 +84,46 @@ class PlayingViewModel : ViewModel() {
     }
 
     fun nextSong(offset: Int): Boolean = playMode.getNextSong(false, offset) != -1
+
+    fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
+        return when(keyCode) {
+            KeyEvent.KEYCODE_0 -> {
+                false
+            }
+            KeyEvent.KEYCODE_1 -> {
+                false
+            }
+            KeyEvent.KEYCODE_2 -> {
+                false
+            }
+            KeyEvent.KEYCODE_3 -> {
+                false
+            }
+            KeyEvent.KEYCODE_4 -> {
+                playMode.previousSong(true,0)
+                true
+            }
+            KeyEvent.KEYCODE_5 -> {
+                playMode.play()
+                true
+            }
+            KeyEvent.KEYCODE_6 -> {
+                playMode.nextSong()
+                true
+            }
+            KeyEvent.KEYCODE_7 -> {
+                false
+            }
+            KeyEvent.KEYCODE_8 -> {
+                false
+            }
+            KeyEvent.KEYCODE_9 -> {
+                false
+            }
+
+            else -> false
+        }
+    }
 
 
 }

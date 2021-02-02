@@ -16,11 +16,15 @@ data class Song(
     var size     : ObservableField<String> = ObservableField(MediaStoreProvider.UNKNOWN)) {
 
     override fun equals(other: Any?): Boolean {
-        return file.get() == other
+        if (other==null) return false
+        if (other is Song) {
+            return file.get()!!.absolutePath == other.file.get()!!.absolutePath
+        }
+        return false
     }
 
     override fun hashCode(): Int {
-        return file.get().hashCode()
+        return file.get()!!.absolutePath.hashCode()
     }
 
 }

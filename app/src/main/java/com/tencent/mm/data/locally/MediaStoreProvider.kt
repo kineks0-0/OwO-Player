@@ -4,14 +4,12 @@ import android.annotation.SuppressLint
 import android.content.ContentResolver
 import android.content.ContentUris
 import android.database.Cursor
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.media.MediaMetadataRetriever
 import android.net.Uri
+import android.os.ParcelFileDescriptor
 import android.provider.MediaStore
-import androidx.core.net.UriCompat
 import androidx.databinding.ObservableField
-import com.tencent.mm.BuildConfig
+import com.bumptech.glide.Glide
 import com.tencent.mm.R
 import com.tencent.mm.getContext
 import kotlinx.coroutines.Dispatchers
@@ -20,6 +18,7 @@ import java.io.File
 import java.io.FileDescriptor
 import java.util.*
 import kotlin.collections.ArrayList
+
 
 object MediaStoreProvider {
 
@@ -52,7 +51,7 @@ object MediaStoreProvider {
             } else {
                 UNKNOWN_ART
             }*/
-            getArtCache(song.album.get()!!.id.get()!!)
+            getRealFilePath(getArtCache(song)) ?: UNKNOWN_ART
         }
     }
 
@@ -66,17 +65,20 @@ object MediaStoreProvider {
                         getArtCache(song.album.get()!!.id.get()!!)
                     )
                 ).let {
-                    when(it) {
+                    return@withContext when(it) {
                         null -> null
                         else -> File(it).readBytes()
                     }
                 }
 
             } else {
-                val byteArray = getArt(song.file.get()!!)
-                byteArray
+                return@withContext getArt(song.file.get()!!)
             }
         }
+    }
+
+    fun getArtUri(song: Song): Uri {
+        return MediaStoreProvider.getArtCache(song)
     }
 
     fun getArt(album: Album): String {
@@ -122,6 +124,27 @@ object MediaStoreProvider {
         )*/
 
     }*/
+
+    private fun getArtCache(song: Song): Uri {
+        return Uri.parse("content://media/external/audio/media/${song.id.get()}/albumart")
+        /*var fileDescriptor: FileDescriptor? = null
+        val resolver: ContentResolver = getContext().contentResolver
+        if (song.album.get()!!.id.get()!! < 0) {
+            val uri =
+                Uri.parse("content://media/external/audio/media/${song.id.get()}/albumart")
+            val parcelFileDescriptor: ParcelFileDescriptor? = resolver.openFileDescriptor(uri, "r")
+            if (parcelFileDescriptor != null) {
+                fileDescriptor = parcelFileDescriptor.fileDescriptor
+            }
+        } else {
+            val uri = ContentUris.withAppendedId(albumArtUri, album)
+            val pfd: ParcelFileDescriptor? = resolver.openFileDescriptor(uri, "r")
+            if (pfd != null) {
+                fileDescriptor = pfd.fileDescriptor
+            }
+        }*/
+        //return getArtFromFile(song.id.get()!!, song.album.get()!!.id.get()!!)
+    }
 
     private fun getArtCache(albumID: Int): String {
         val mUriAlbums = "content://media/external/audio/albums"
@@ -182,7 +205,11 @@ object MediaStoreProvider {
                 val cursor: Cursor? =
                     getContext()
                         .contentResolver
-                        .query(uri, arrayOf(MediaStore.Images.ImageColumns.DATA), null, null, null)
+                        .query(
+                            uri,
+                            arrayOf(MediaStore.Images.ImageColumns.DATA),
+                            null, null, null
+                        )
                 if (cursor != null) {
                     if (cursor.moveToFirst()) {
                         val index = cursor.getColumnIndex(MediaStore.Images.ImageColumns.DATA)
