@@ -4,39 +4,43 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <data>
+
         <variable
             name="adapter"
-            type="com.tencent.mm.ui.viewpage.MusicItemRecyclerViewAdapter" />
+            type="com.studio.owo.player.ui.viewpage.adapter.MusicItemRecyclerViewAdapter" />
+
         <variable
             name="song"
-            type="com.tencent.mm.data.locally.Song" />
+            type="com.studio.owo.player.data.locally.Song" />
+
         <variable
             name="num"
             type="String" />
     </data>
 
     <androidx.cardview.widget.CardView
-        app:cardPreventCornerOverlap="false"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:layout_margin="4dp">
 
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/clickLayout"
             android:layout_width="match_parent"
             android:layout_height="70dp"
-            android:clickable="true"
-            android:focusable="true"
             android:background="@drawable/white_ripple"
-            android:descendantFocusability="blocksDescendants">
+            android:clickable="true"
+            android:descendantFocusability="blocksDescendants"
+            android:focusable="true">
 
             <ImageView
                 android:id="@+id/imageView"
                 android:layout_width="75dp"
-                android:layout_height="wrap_content"
+                android:layout_height="0dp"
+                app:layout_constraintDimensionRatio="1:1"
                 android:contentDescription="@string/albums_art"
-                android:scaleType="centerCrop"
                 android:music="@{song}"
+                android:scaleType="centerCrop"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
@@ -46,41 +50,41 @@
             <TextView
                 android:id="@+id/item_number"
                 android:layout_width="0dp"
-                android:layout_height="30dp"
-                android:layout_marginStart="20dp"
-                android:layout_marginLeft="20dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
                 android:layout_marginEnd="8dp"
-                android:layout_marginRight="8dp"
                 android:ellipsize="end"
                 android:focusable="false"
                 android:gravity="start|bottom"
                 android:maxLines="1"
                 android:text='@{num + "    " + song.name}'
+                android:textColor="?android:attr/textColorPrimary"
                 android:textSize="14sp"
                 android:textStyle="bold"
+                app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toEndOf="@+id/imageView"
-                app:layout_constraintTop_toTopOf="parent" />
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintVertical_bias="0.26"
+                tools:text="rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr" />
 
             <TextView
                 android:id="@+id/content"
                 android:layout_width="0dp"
-                android:layout_height="30dp"
+                android:layout_height="wrap_content"
                 android:layout_marginStart="40dp"
-                android:layout_marginLeft="40dp"
-                android:layout_marginTop="2dp"
+                android:layout_marginTop="6dp"
                 android:layout_marginEnd="8dp"
-                android:layout_marginRight="8dp"
                 android:ellipsize="end"
                 android:focusable="false"
                 android:gravity="start|top"
                 android:maxLines="1"
                 android:text='@{song.artist.name + " - " + song.album.title}'
                 android:textSize="12sp"
-                app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toEndOf="@+id/imageView"
-                app:layout_constraintTop_toBottomOf="@+id/item_number" />
+                app:layout_constraintTop_toBottomOf="@+id/item_number"
+                tools:text="rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr" />
         </androidx.constraintlayout.widget.ConstraintLayout>
 
 

@@ -9,9 +9,9 @@ android {
     buildToolsVersion "30.0.3"
 
     defaultConfig {
-        applicationId "com.tencent.mm"
-        minSdkVersion 16
-        targetSdkVersion 26
+        applicationId "com.studio.owo.player"
+        minSdkVersion 21
+        targetSdkVersion 28
         versionCode 1
         versionName "Alpha 0.0.1"
 
@@ -46,9 +46,9 @@ android {
             // 加载默认混淆配置文件
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             // 混淆
-            //minifyEnabled true
+            minifyEnabled true
             // 移除无用的 resources 文件
-            //shrinkResources true
+            shrinkResources true
             // Zipalign优化
             zipAlignEnabled true
             // 签名
@@ -84,14 +84,14 @@ dependencies {
     api 'androidx.lifecycle:lifecycle-extensions:2.2.0'
 
     //Glide
-    implementation "com.github.bumptech.glide:glide:4.11.0"
+    implementation 'com.github.bumptech.glide:glide:4.12.0'
     //ok http
-    implementation "com.squareup.okhttp3:okhttp:4.9.0"
+    //implementation "com.squareup.okhttp3:okhttp:4.9.0"
     //万能Adapter基类
     //implementation 'com.github.CymChad:BaseRecyclerViewAdapterHelper:3.0.4'
     //retrofit
-    implementation 'com.squareup.retrofit2:retrofit:2.9.0'
-    api 'com.squareup.retrofit2:converter-gson:2.9.0'
+    //implementation 'com.squareup.retrofit2:retrofit:2.9.0'
+    //api 'com.squareup.retrofit2:converter-gson:2.9.0'
 
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
     implementation 'androidx.lifecycle:lifecycle-livedata-ktx:2.2.0'

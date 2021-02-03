@@ -10,12 +10,11 @@
 
     <color name="viewBackground">#EBE6FF</color>
     <color name="viewBackground2">#E0ECFF</color>
-    <color name="viewElevation">#0D9E9E9E</color>
 
-    <color name="ripple">#10393939</color>
-    <color name="rippled">#10000000</color>
+    <color name="ripple">#979A4CFF</color>
 
-    <color name="background">#00000000</color>
+    <color name="playButtonBackground">#976900FF</color>
+    <color name="playButtonRippled">#97340077</color>
 
     <color name="colorPrimary">@color/purple_500</color>
     <color name="colorPrimaryVariant">@color/purple_700</color>

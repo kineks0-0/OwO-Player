@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:enterFadeDuration="600"
+    android:exitFadeDuration="600">
+    <item android:state_pressed="true">
+        <shape android:antialias="true" android:dither="true" android:shape="oval" android:useLevel="false">
+            <solid android:color="@color/playButtonRippled" />
+        </shape>
+    </item>
+    <item>
+        <shape android:antialias="true" android:dither="true" android:shape="oval" android:useLevel="false">
+            <solid android:color="@color/playButtonBackground" />
+        </shape>
+    </item>
+</selector>

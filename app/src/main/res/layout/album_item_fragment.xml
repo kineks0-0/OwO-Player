@@ -1,38 +1,39 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout >
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <data>
         <variable
             name="album"
-            type="com.tencent.mm.data.locally.Album" />
+            type="com.studio.owo.player.data.locally.Album" />
         <variable
             name="num"
             type="String" />
     </data>
-    <androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:app="http://schemas.android.com/apk/res-auto"
-        xmlns:tools="http://schemas.android.com/tools"
-        app:cardPreventCornerOverlap="false"
+
+    <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:layout_margin="4dp">
 
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/clickLayout"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:focusable="true"
+            android:background="@drawable/white_ripple"
             android:clickable="true"
-            android:background="@drawable/white_ripple">
+            android:focusable="true">
 
             <ImageView
                 android:id="@+id/imageView"
-                android:layout_width="match_parent"
-                android:layout_height="150dp"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                app:layout_constraintDimensionRatio="1:1"
+                android:album="@{album}"
                 android:contentDescription="@string/albums_art"
                 android:scaleType="centerCrop"
                 android:src="@drawable/ic_launcher_background"
-                android:album="@{album}"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
@@ -42,9 +43,9 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_margin="@dimen/text_margin"
+                android:ellipsize="end"
                 android:text="@{num}"
                 android:textAppearance="?attr/textAppearanceListItem"
-                android:ellipsize="end"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="@+id/imageView"
                 app:layout_constraintTop_toBottomOf="@+id/imageView" />
@@ -54,10 +55,10 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_margin="@dimen/text_margin"
+                android:ellipsize="end"
                 android:maxLines="1"
                 android:text="@{album.title}"
                 android:textAppearance="?attr/textAppearanceListItem"
-                android:ellipsize="end"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintHorizontal_bias="0.08"

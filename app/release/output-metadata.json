@@ -4,7 +4,7 @@
     "type": "APK",
     "kind": "Directory"
   },
-  "applicationId": "com.tencent.mm",
+  "applicationId": "com.studio.owo.player",
   "variantName": "processReleaseResources",
   "elements": [
     {

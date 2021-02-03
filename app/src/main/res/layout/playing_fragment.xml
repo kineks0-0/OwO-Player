@@ -13,30 +13,30 @@
     <data>
 
         <import type="android.view.View" />
+
         <variable
             name="playModel"
-            type="com.tencent.mm.ui.viewpage.PlayingViewModel" />
+            type="com.studio.owo.player.ui.viewpage.model.PlayingViewModel" />
     </data>
 
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@drawable/white_ripple"
-        android:descendantFocusability="afterDescendants"
         tools:context=".ui.viewpage.PlayingFragment">
 
 
         <ImageView
             android:id="@+id/nextPlayImageView2"
-            android:layout_width="95dp"
-            android:layout_height="95dp"
-            android:layout_marginStart="45dp"
-            android:layout_marginLeft="45dp"
-            android:background="@drawable/view_elevation"
-            android:clickable="true"
+            android:layout_height="0dp"
+            android:layout_width="0dp"
+            app:layout_constraintWidth_default="percent"
+            app:layout_constraintWidth_percent=".3"
+            app:layout_constraintDimensionRatio="H,1:1"
+            android:layout_marginStart="60dp"
+            android:background="@drawable/view_background"
             android:contentDescription="@string/app_name"
-            android:focusable="true"
+            android:elevation="8dp"
             android:song="@{playModel.songNext2}"
             android:visibility="@{playModel.nextSong(1) ? View.VISIBLE : View.INVISIBLE}"
             app:layout_constraintBottom_toBottomOf="@+id/nextPlayImageView"
@@ -46,14 +46,15 @@
 
         <ImageView
             android:id="@+id/nextPlayImageView"
-            android:layout_width="120dp"
-            android:layout_height="120dp"
+            android:layout_height="0dp"
+            android:layout_width="0dp"
+            app:layout_constraintWidth_default="percent"
+            app:layout_constraintWidth_percent=".4"
+            app:layout_constraintDimensionRatio="H,1:1"
             android:layout_marginStart="60dp"
-            android:layout_marginLeft="60dp"
-            android:background="@drawable/view_elevation"
-            android:clickable="true"
+            android:background="@drawable/view_background"
             android:contentDescription="@string/app_name"
-            android:focusable="true"
+            android:elevation="8dp"
             android:song="@{playModel.songNext}"
             android:visibility="@{playModel.nextSong(0) ? View.VISIBLE:View.INVISIBLE}"
             app:layout_constraintBottom_toBottomOf="@+id/playingImageView"
@@ -64,110 +65,157 @@
 
         <ImageView
             android:id="@+id/playingImageView"
-            android:layout_width="150dp"
-            android:layout_height="150dp"
-            android:layout_marginTop="10dp"
-            android:background="@drawable/view_elevation"
-            android:clickable="true"
+            android:layout_height="0dp"
+            android:layout_width="0dp"
+            app:layout_constraintWidth_default="percent"
+            app:layout_constraintWidth_percent=".5"
+            app:layout_constraintDimensionRatio="H,1:1"
+            android:layout_marginTop="32dp"
+            android:background="@drawable/view_background"
             android:contentDescription="@string/app_name"
-            android:focusable="true"
+            android:elevation="8dp"
             android:onClick="@{playModel::switchPlayMode}"
             android:song="@{playModel.song}"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/songTitle2TextView" />
+            app:layout_constraintTop_toBottomOf="@+id/songTitle2TextView"
+            app:layout_constraintVertical_bias="0.07999998" />
 
         <TextView
             android:id="@+id/songTitleTextView"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
-            android:layout_marginTop="8dp"
+            android:layout_marginTop="32dp"
             android:layout_marginEnd="16dp"
             android:background="@drawable/white_ripple"
             android:ellipsize="end"
             android:gravity="center"
             android:maxLines="1"
-            android:shadowColor="@android:color/darker_gray"
-            android:shadowDx="3"
-            android:shadowDy="3"
-            android:shadowRadius="6"
             android:text="@{playModel.song.name}"
+            android:textColor="?android:attr/textColorPrimary"
             android:textSize="20sp"
             android:textStyle="bold"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            tools:text="testestsetsetsetsettestestsetestsetse" />
+            tools:text="test test test test test test test test test test test" />
 
         <TextView
             android:id="@+id/songTitle2TextView"
             android:layout_width="wrap_content"
             android:layout_height="0dp"
+            android:layout_marginTop="24dp"
             android:background="@drawable/view_background2"
+            android:elevation="2dp"
             android:ellipsize="end"
             android:maxLength="25"
             android:maxLines="1"
-            android:paddingLeft="8dp"
-            android:paddingTop="3dp"
-            android:paddingRight="8dp"
-            android:paddingBottom="3dp"
-            android:shadowDx="30"
-            android:shadowDy="30"
-            android:shadowRadius="30"
+            android:paddingLeft="10dp"
+            android:paddingTop="4dp"
+            android:paddingRight="10dp"
+            android:paddingBottom="4dp"
             android:text="@{playModel.song.artist.name + '-' + playModel.song.album.title}"
-            android:textSize="15sp"
+            android:textSize="14sp"
             app:layout_constraintEnd_toEndOf="@+id/songTitleTextView"
             app:layout_constraintStart_toStartOf="@+id/songTitleTextView"
             app:layout_constraintTop_toBottomOf="@+id/songTitleTextView"
-            tools:text="testestsetsetsetsettestestsetestsetse" />
+            tools:text="test test test test test test test test test test test"/>
 
         <ImageView
-            android:id="@+id/playImageView"
-            android:layout_width="35dp"
-            android:layout_height="35dp"
-            android:background="@drawable/white_ripple"
+            android:id="@+id/playButton"
+            android:layout_width="60dp"
+            android:layout_height="0dp"
+            app:layout_constraintDimensionRatio="1:1"
+            android:background="@drawable/play_button_background"
             android:clickable="true"
             android:contentDescription="@string/playing"
+            android:antialias="true"
+            android:elevation="5dp"
             android:focusable="true"
             android:onClick="@{playModel::playSong}"
+            android:padding="15dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/playingImageView"
-            app:srcCompat="@drawable/ic_play_arrow_black_48dp" />
+            app:srcCompat="@drawable/ic_play_arrow_black_48dp"
+            app:tint="#DCFFFFFF" />
 
         <ImageView
-            android:id="@+id/nextImageView"
-            android:layout_width="35dp"
-            android:layout_height="35dp"
-            android:layout_marginStart="32dp"
-            android:layout_marginLeft="32dp"
+            android:id="@+id/nextPlay"
+            android:layout_width="40dp"
+            android:layout_height="0dp"
+            android:padding="7dp"
+            app:layout_constraintDimensionRatio="1:1"
+            android:layout_marginStart="20dp"
             android:background="@drawable/white_ripple"
             android:clickable="true"
             android:contentDescription="@string/next_play"
             android:focusable="true"
             android:onClick="@{playModel::nextSong}"
-            app:layout_constraintStart_toEndOf="@+id/playImageView"
-            app:layout_constraintTop_toTopOf="@+id/playImageView"
-            app:srcCompat="@drawable/ic_skip_next_black_48dp" />
+            app:layout_constraintBottom_toBottomOf="@+id/playButton"
+            app:layout_constraintStart_toEndOf="@+id/playButton"
+            app:layout_constraintTop_toTopOf="@+id/playButton"
+            app:srcCompat="@drawable/ic_skip_next_black_48dp"
+            app:tint="?attr/colorControlNormal"/>
 
         <ImageView
-            android:id="@+id/perImageView"
-            android:layout_width="35dp"
-            android:layout_height="35dp"
-            android:layout_marginEnd="32dp"
-            android:layout_marginRight="32dp"
+            android:id="@+id/perIPlay"
+            android:layout_width="40dp"
+            android:layout_height="0dp"
+            android:layout_marginEnd="20dp"
             android:background="@drawable/white_ripple"
             android:clickable="true"
             android:contentDescription="@string/previous_play"
             android:focusable="true"
             android:onClick="@{playModel::preSong}"
-            app:layout_constraintEnd_toStartOf="@+id/playImageView"
-            app:layout_constraintTop_toTopOf="@+id/playImageView"
-            app:srcCompat="@drawable/ic_skip_previous_black_48dp" />
+            android:padding="7dp"
+            app:layout_constraintBottom_toBottomOf="@+id/playButton"
+            app:layout_constraintDimensionRatio="1:1"
+            app:layout_constraintEnd_toStartOf="@+id/playButton"
+            app:layout_constraintTop_toTopOf="@+id/playButton"
+            app:srcCompat="@drawable/ic_skip_previous_black_48dp"
+            app:tint="?attr/colorControlNormal" />
 
+
+        <ImageView
+            android:id="@+id/volumeUp"
+            android:layout_width="40dp"
+            android:layout_height="0dp"
+            android:padding="7dp"
+            app:layout_constraintDimensionRatio="1:1"
+            android:layout_marginBottom="20dp"
+            android:background="@drawable/white_ripple"
+            android:clickable="true"
+            android:focusable="true"
+            android:onClick="@{playModel::volumeUp}"
+            app:layout_constraintBottom_toTopOf="@+id/playButton"
+            app:layout_constraintEnd_toEndOf="@+id/playButton"
+            app:layout_constraintStart_toStartOf="@+id/playButton"
+            app:srcCompat="@drawable/ic_volume_up_black_48dp"
+            app:tint="?attr/colorControlNormal"
+            android:contentDescription="@string/volume_up" />
+
+        <ImageView
+            android:id="@+id/volumeDown"
+            android:layout_width="40dp"
+            android:layout_height="0dp"
+            android:padding="7dp"
+            app:layout_constraintDimensionRatio="1:1"
+            android:layout_marginTop="20dp"
+            android:background="@drawable/white_ripple"
+            android:clickable="true"
+            android:focusable="true"
+            android:onClick="@{playModel::volumeDown}"
+            app:layout_constraintEnd_toEndOf="@+id/playButton"
+            app:layout_constraintStart_toStartOf="@+id/playButton"
+            app:layout_constraintTop_toBottomOf="@+id/playButton"
+            app:srcCompat="@drawable/ic_volume_down_black_48dp"
+            app:tint="?attr/colorControlNormal"
+            android:contentDescription="@string/volume_down" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

@@ -8,14 +8,6 @@
     <string name="albums_art">AlbumsArt</string>
 
 
-
-    <string name="playBegins">Playing</string>
-    <string name="playStop">PlayStop</string>
-    <string name="playEnd">PlayEnd</string>
-    <string name="playPause">PlayPause</string>
-    <string name="playContinues">PlayContinues</string>
-
-    <string name="playMode">Play Mode</string>
     <string name="SongLoop">Song Loop</string>
     <string name="ListPlay">List Play</string>
     <string name="ListLoop">List Loop</string>
@@ -23,4 +15,6 @@
     <string name="next_play">next play</string>
     <string name="previous_play">previous play</string>
     <string name="playing">playing</string>
+    <string name="volume_up">volume up</string>
+    <string name="volume_down">volume down</string>
 </resources>
