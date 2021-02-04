@@ -11,9 +11,12 @@ import android.view.View
 import android.view.ViewGroup
 import com.bumptech.glide.Glide
 import com.tencent.mm.R
-import com.tencent.mm.data.locally.MediaStoreProvider
+import com.tencent.mm.data.locally.utils.MediaStoreProvider
 import com.tencent.mm.getContext
-import com.tencent.mm.ui.viewpage.dummy.DummyContent
+import com.tencent.mm.ui.viewpage.adapter.AlbumItemRecyclerViewAdapter
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 
 /**
  * A fragment representing a list of Items.
@@ -40,7 +43,9 @@ class AlbumFragment : Fragment(),OnPageSelectedChange {
         if (view is RecyclerView) {
             with(view) {
                 post {
-                    adapter = AlbumItemRecyclerViewAdapter(MediaStoreProvider.queryAlbum())
+                    GlobalScope.launch(Dispatchers.Main) {
+                        adapter = AlbumItemRecyclerViewAdapter(MediaStoreProvider.queryAlbum())
+                    }
                 }
                 layoutManager = when {
                     columnCount <= 1 -> LinearLayoutManager(context)

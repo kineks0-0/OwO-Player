@@ -12,8 +12,8 @@
     <color name="viewBackground2">#E0ECFF</color>
     <color name="viewElevation">#0D9E9E9E</color>
 
-    <color name="ripple">#10393939</color>
-    <color name="rippled">#10000000</color>
+    <color name="ripple">#1A393939</color>
+    <color name="rippled">#1A000000</color>
 
     <color name="background">#00000000</color>
 

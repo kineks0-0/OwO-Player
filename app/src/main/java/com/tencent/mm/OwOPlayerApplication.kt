@@ -24,5 +24,10 @@ class OwOPlayerApplication : Application() {
     companion object {
         @SuppressLint("StaticFieldLeak")
         lateinit var context: Context
+
+        const val REQUEST_NOTIFICATION_CODE_PREVIOUS_PLAY = 20
+        const val REQUEST_NOTIFICATION_CODE_PAUSE_PLAY = 21
+        const val REQUEST_NOTIFICATION_CODE_NEXT_PLAY = 22
+        const val SERVICE_NOTIFICATION_ID = 20
     }
 }

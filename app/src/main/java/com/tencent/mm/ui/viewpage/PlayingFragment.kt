@@ -1,35 +1,26 @@
 package com.tencent.mm.ui.viewpage
 
 import android.annotation.SuppressLint
-import android.graphics.Color
-import android.graphics.drawable.Drawable
 import androidx.lifecycle.ViewModelProvider
 import android.os.Bundle
-import android.view.FocusFinder
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
-import androidx.annotation.StringRes
 import androidx.databinding.BindingAdapter
-import androidx.databinding.ObservableField
 import com.bumptech.glide.Glide
-import com.bumptech.glide.RequestBuilder
-import com.bumptech.glide.RequestManager
 import com.bumptech.glide.load.resource.bitmap.CenterCrop
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners
-import com.google.android.material.snackbar.Snackbar
 import com.tencent.mm.R
-import com.tencent.mm.data.locally.MediaStoreProvider
-import com.tencent.mm.data.locally.MusicPlay
+import com.tencent.mm.data.locally.utils.MediaStoreProvider
+import com.tencent.mm.data.locally.utils.MusicPlay
 import com.tencent.mm.data.locally.Song
 import com.tencent.mm.databinding.PlayingFragmentBinding
-import com.tencent.mm.getContext
+import com.tencent.mm.ui.viewpage.model.PlayingViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import java.io.File
 import kotlin.concurrent.thread
 
 class PlayingFragment : Fragment(), OnPageSelectedChange {
@@ -52,7 +43,7 @@ class PlayingFragment : Fragment(), OnPageSelectedChange {
                                     return@let MediaStoreProvider.UNKNOWN_ART_RES
                             }
                         )
-                        .placeholder(R.drawable.view_background)
+                        .placeholder(imageView.drawable?:imageView.background)
                         .error(R.drawable.view_background)
                         .transform(CenterCrop(), RoundedCorners(rdp))
                         .into(imageView)
@@ -67,6 +58,37 @@ class PlayingFragment : Fragment(), OnPageSelectedChange {
     private var _binding: PlayingFragmentBinding? = null // onDestroyView.
     private val binding get() = _binding!!
     private lateinit var viewModel: PlayingViewModel
+    private val onPlayListener = MusicPlay.addOnPlayListener(object : MusicPlay.OnPlayListener {
+
+        @SuppressLint("SetTextI18n")
+        override fun onPlayBegins(song: Song, songList: ArrayList<Song>, index: Int) =
+            onPlayButtonRedraw()
+
+        override fun onPlayStop() = onPlayButtonRedraw()
+        override fun onPlayEnd() = onPlayButtonRedraw()
+        override fun onPlayPause() = onPlayButtonRedraw()
+        override fun onPlayContinues() = onPlayButtonRedraw()
+        override fun onRest() = onViewRedraw()
+        override fun onError() = onPlayButtonRedraw()
+
+        override fun onPlayModeChange(playModeType: Int) =
+            viewModel.onPlayModeChange(this@PlayingFragment.requireView(), playModeType)
+
+        @SuppressLint("SetTextI18n")
+        override fun onViewRedraw() {
+            binding.playModel = viewModel
+            onPlayButtonRedraw()
+        }
+
+        fun onPlayButtonRedraw() {
+            //binding.playing = MusicPlay.isPlaying
+            if (MusicPlay.isPlaying)
+                binding.playButton.setImageResource(R.drawable.ic_pause_black_48dp)
+            else
+                binding.playButton.setImageResource(R.drawable.ic_play_arrow_black_48dp)
+        }
+
+    })
 
 
 
@@ -95,7 +117,7 @@ class PlayingFragment : Fragment(), OnPageSelectedChange {
                             v.post {
                                 v.alpha = 1f
                             }
-                            Thread.sleep(900)
+                            Thread.sleep(1000)
                         }
                     }
                 }
@@ -105,48 +127,14 @@ class PlayingFragment : Fragment(), OnPageSelectedChange {
         }
 
         binding.playingImageView.onFocusChangeListener = binding.root.onFocusChangeListener
-        binding.nextPlayImageView.onFocusChangeListener = binding.root.onFocusChangeListener
-        binding.nextPlayImageView2.onFocusChangeListener = binding.root.onFocusChangeListener
+        //binding.nextPlayImageView.onFocusChangeListener = binding.root.onFocusChangeListener
+        //binding.nextPlayImageView2.onFocusChangeListener = binding.root.onFocusChangeListener
 
-        MusicPlay.onPlayListener = object : MusicPlay.OnPlayListener {
-            @SuppressLint("SetTextI18n")
-            override fun onPlayBegins
-                        (song: Song, songList: ArrayList<Song>, index: Int) = onPlayButtonRedraw()
-
-            override fun onPlayStop() = onPlayButtonRedraw()
-            override fun onPlayEnd() = onPlayButtonRedraw()
-            override fun onPlayPause() = onPlayButtonRedraw()
-            override fun onPlayContinues() = onPlayButtonRedraw()
-            override fun onRest() {
-                onViewRedraw()
-            }
-            override fun onError() = onPlayButtonRedraw()
-
-            override fun onPlayModeChange(playModeType: Int) =
-                viewModel.onPlayModeChange(this@PlayingFragment.requireView(), playModeType)
-
-
-            @SuppressLint("SetTextI18n")
-            override fun onViewRedraw() {
-                binding.playModel = viewModel
-                viewModel.playingFragmentTitle.value = binding.songTitleTextView.text as String
-                onPlayButtonRedraw()
-            }
-
-            fun onPlayButtonRedraw() {
-                //binding.playing = MusicPlay.isPlaying
-                if (MusicPlay.isPlaying)
-                    binding.playImageView.setImageResource(R.drawable.ic_pause_black_48dp)
-                else
-                    binding.playImageView.setImageResource(R.drawable.ic_play_arrow_black_48dp)
-            }
-
-        }
     }
 
     override fun onResume() {
         super.onResume()
-        MusicPlay.onPlayListener.onViewRedraw()
+        //MusicPlay.onPlayListener.onViewRedraw()
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
@@ -157,6 +145,7 @@ class PlayingFragment : Fragment(), OnPageSelectedChange {
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+        MusicPlay.removePlayListener(onPlayListener)
     }
 
     override fun onPageSelectedChange(hasFocus: Boolean, position: Int) {

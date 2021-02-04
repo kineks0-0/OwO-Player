@@ -1,4 +1,4 @@
-package com.tencent.mm.ui.viewpage
+package com.tencent.mm.ui.viewpage.adapter
 
 import android.annotation.SuppressLint
 import androidx.recyclerview.widget.RecyclerView
@@ -11,7 +11,7 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.bitmap.CenterCrop
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import com.tencent.mm.R
-import com.tencent.mm.data.locally.MediaStoreProvider
+import com.tencent.mm.data.locally.utils.MediaStoreProvider
 import com.tencent.mm.data.locally.Song
 import com.tencent.mm.databinding.MusicItemFragmentBinding
 import kotlinx.coroutines.Dispatchers
@@ -19,12 +19,12 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 
 
-class MusicItemRecyclerViewAdapter(private val songs: List<Song>) :
+class MusicItemRecyclerViewAdapter(val songs: List<Song>) :
     RecyclerView.Adapter<MusicItemRecyclerViewAdapter.ViewHolder>() {
 
 
     var onClickListener: OnClick = object : OnClick {
-        override fun onClick(position: Int, holder: ViewHolder) {}
+        override fun onClick(position: Int, holder: ViewHolder, adapter: MusicItemRecyclerViewAdapter) {}
     }
     var onKeyListener =  View.OnKeyListener { v, keyCode, event ->
         false
@@ -43,7 +43,7 @@ class MusicItemRecyclerViewAdapter(private val songs: List<Song>) :
             }
         }
         binding.clickLayout.setOnClickListener {
-            onClickListener.onClick(holder.adapterPosition, holder)
+            onClickListener.onClick(holder.adapterPosition, holder, this)
         }
         binding.clickLayout.setOnKeyListener { v, keyCode, event ->
             onKeyListener.onKey(holder.itemView,keyCode,event)
@@ -55,29 +55,15 @@ class MusicItemRecyclerViewAdapter(private val songs: List<Song>) :
     var notFocusHolder = -1
     var lastHasFocusHolder = -1
 
-    @SuppressLint("SetTextI18n")
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        //val song: Song = songs[position]
         holder.binding.num = position.toString()
         holder.binding.song = songs[position]
-        /*holder.idView.text = position.toString() + "   " + song.name
-        holder.contentView.text =
-            song.artist.get()!!.name.get()!! + " - " + song.album.get()!!.title.get()!!
-
-        GlobalScope.launch(Dispatchers.Main) {
-            Glide.with(holder.itemView.context)
-                .load(MediaStoreProvider.getArt(song))
-                .placeholder(R.drawable.unknown)
-                .error(R.drawable.unknown)
-                .transform(CenterCrop(), RoundedCorners(4))
-                .into(holder.imageView)
-        }*/
     }
 
     override fun getItemCount(): Int = songs.size
 
     interface OnClick {
-        fun onClick(position: Int, holder: ViewHolder)
+        fun onClick(position: Int, holder: ViewHolder, adapter: MusicItemRecyclerViewAdapter)
     }
 
     inner class ViewHolder(val binding: MusicItemFragmentBinding) :

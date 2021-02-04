@@ -10,6 +10,7 @@ import android.view.View
 import android.view.ViewGroup
 import com.tencent.mm.R
 import com.tencent.mm.getContext
+import com.tencent.mm.ui.viewpage.adapter.SettingItemRecyclerViewAdapter
 import com.tencent.mm.ui.viewpage.dummy.DummyContent
 
 /**

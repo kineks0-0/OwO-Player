@@ -1,6 +1,7 @@
 package com.tencent.mm.data.locally
 
 import androidx.databinding.ObservableField
+import com.tencent.mm.data.locally.utils.MediaStoreProvider
 import java.io.File
 
 data class Song(

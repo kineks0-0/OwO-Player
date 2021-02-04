@@ -1,4 +1,4 @@
-package com.tencent.mm.data.locally
+package com.tencent.mm.data.locally.utils
 
 import android.annotation.SuppressLint
 import android.content.ContentResolver
@@ -6,16 +6,16 @@ import android.content.ContentUris
 import android.database.Cursor
 import android.media.MediaMetadataRetriever
 import android.net.Uri
-import android.os.ParcelFileDescriptor
 import android.provider.MediaStore
 import androidx.databinding.ObservableField
-import com.bumptech.glide.Glide
 import com.tencent.mm.R
+import com.tencent.mm.data.locally.Album
+import com.tencent.mm.data.locally.Artist
+import com.tencent.mm.data.locally.Song
 import com.tencent.mm.getContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
-import java.io.FileDescriptor
 import java.util.*
 import kotlin.collections.ArrayList
 
@@ -27,13 +27,12 @@ object MediaStoreProvider {
     val UNKNOWN_ART =
         "android.resource://" + getContext().packageName + "/drawable/$UNKNOWN_ART_RES"
 
-    const val ignoreCacheAlbumArt = false
+    private const val ignoreCacheAlbumArt = false
 
-    private val mediaData: MediaMetadataRetriever = MediaMetadataRetriever()
     private val albumArtUri: Uri = Uri.parse("content://media/external/audio/albumart")
 
 
-    suspend fun getArt(song: Song): String {
+    fun getArt(song: Song): String? {
         return if (!ignoreCacheAlbumArt) {
             getArtCache(song.album.get()!!.id.get()!!)
         } else {
@@ -51,7 +50,7 @@ object MediaStoreProvider {
             } else {
                 UNKNOWN_ART
             }*/
-            getRealFilePath(getArtCache(song)) ?: UNKNOWN_ART
+            getRealFilePath(getArtCache(song))
         }
     }
 
@@ -65,7 +64,7 @@ object MediaStoreProvider {
                         getArtCache(song.album.get()!!.id.get()!!)
                     )
                 ).let {
-                    return@withContext when(it) {
+                    return@withContext when (it) {
                         null -> null
                         else -> File(it).readBytes()
                     }
@@ -78,10 +77,10 @@ object MediaStoreProvider {
     }
 
     fun getArtUri(song: Song): Uri {
-        return MediaStoreProvider.getArtCache(song)
+        return getArtCache(song)
     }
 
-    fun getArt(album: Album): String {
+    fun getArt(album: Album): String? {
         return getArtCache(album.id.get()!!)
     }
 
@@ -92,61 +91,11 @@ object MediaStoreProvider {
         return mediaData.embeddedPicture
     }
 
-    /*private fun getArt(albumID: Int): String {
-        val mUriAlbums = "content://media/external/audio/albums"
-        val projection = arrayOf("album_art")
-        val cur: Cursor? = getContext().contentResolver
-            .query(
-                Uri.parse("$mUriAlbums/$albumID"),
-                projection,
-                null,
-                null,
-                null
-            )
-
-        var albumArt: String? = null
-
-        if (cur != null) {
-            if (cur.count > 0 && cur.columnCount > 0) {
-                cur.moveToNext()
-                albumArt = cur.getString(0)
-            }
-            cur.close()
-            if (albumArt != null) {
-                return albumArt
-                //return BitmapFactory.decodeFile(albumArt)
-            }
-        }
-
-        return UNKNOWN_ART
-        /*return BitmapFactory.decodeResource(
-            getContext().resources, R.drawable.unknown
-        )*/
-
-    }*/
-
     private fun getArtCache(song: Song): Uri {
         return Uri.parse("content://media/external/audio/media/${song.id.get()}/albumart")
-        /*var fileDescriptor: FileDescriptor? = null
-        val resolver: ContentResolver = getContext().contentResolver
-        if (song.album.get()!!.id.get()!! < 0) {
-            val uri =
-                Uri.parse("content://media/external/audio/media/${song.id.get()}/albumart")
-            val parcelFileDescriptor: ParcelFileDescriptor? = resolver.openFileDescriptor(uri, "r")
-            if (parcelFileDescriptor != null) {
-                fileDescriptor = parcelFileDescriptor.fileDescriptor
-            }
-        } else {
-            val uri = ContentUris.withAppendedId(albumArtUri, album)
-            val pfd: ParcelFileDescriptor? = resolver.openFileDescriptor(uri, "r")
-            if (pfd != null) {
-                fileDescriptor = pfd.fileDescriptor
-            }
-        }*/
-        //return getArtFromFile(song.id.get()!!, song.album.get()!!.id.get()!!)
     }
 
-    private fun getArtCache(albumID: Int): String {
+    private fun getArtCache(albumID: Int): String? {
         val mUriAlbums = "content://media/external/audio/albums"
         val projection = arrayOf("album_art")
         var albumArt: String? = null
@@ -165,9 +114,9 @@ object MediaStoreProvider {
                 cur.close()
             }
         }
-        if (albumArt == null) {
+        /*if (albumArt == null) {
             albumArt = UNKNOWN_ART
-        }
+        }*/
         return albumArt
     }
 
@@ -275,115 +224,122 @@ object MediaStoreProvider {
 
 
     @SuppressLint("Recycle")
-    fun querySongs(): ArrayList<Song> {
-        val cursor: Cursor = getContext()
-            .contentResolver.query(
-                MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, query,
-                "is_music != 0", null, null
-            ) ?: return ArrayList()
-
-        return loadSongs(cursor)
-    }
-
-    @SuppressLint("Recycle")
-    fun querySongsFromAlbums(albumID: Int): ArrayList<Song> {
-
-        val cursor: Cursor = getContext()
-            .contentResolver.query(
-                MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, query,
-                "is_music != 0 and album_id = $albumID", null, null
-            ) ?: return ArrayList()
-
-        return loadSongs(cursor)
-    }
-
-    private fun loadSongs(cursor: Cursor): ArrayList<Song> {
-        val songs: ArrayList<Song> = ArrayList()
-
-        if (cursor.moveToFirst()) {
-            var song: Song
-            do {
-                cursor.let {
-                    val artist = Artist(
-                        ObservableField(it.getInt(ARTIST_ID)),
-                        ObservableField(it.getString(ARTIST))
-                    )
-                    song = Song(
-                        ObservableField(File(it.getString(DATA))),// 文件路径
-                        ObservableField(it.getInt(ID)),// id
-                        ObservableField(it.getString(TITLE)),// 歌曲名
-                        ObservableField(it.getString(DISPLAY_NAME)),// 文件名
-                        ObservableField(it.getInt(DURATION)),// 时长
-                        ObservableField(artist),// 歌手
-                        ObservableField(
-                            Album(
-                                ObservableField(""),
-                                ObservableField(it.getInt(ARTIST_ID)),
-                                ObservableField(-1),
-                                ObservableField(it.getString(ALBUM)),
-                                ObservableField(artist)
-                            )
-                        ),// 专辑
-                        ObservableField(it.getString(YEAR) ?: UNKNOWN),// 年代
-                        ObservableField(it.getString(MIME_TYPE).trim()),// 格式
-                        ObservableField(it.getString(SIZE)),// 文件大小
-                    )
-                }
-                songs.add(song)
-            } while (cursor.moveToNext())
-            cursor.close()
+    suspend fun querySongs(): ArrayList<Song> {
+        return withContext(Dispatchers.Default) {
+            val cursor: Cursor = getContext()
+                .contentResolver.query(
+                    MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, query,
+                    "is_music != 0", null, null
+                ) ?: return@withContext ArrayList()
+            return@withContext loadSongs(cursor)
         }
-        return songs
     }
 
     @SuppressLint("Recycle")
-    fun queryAlbum(): ArrayList<Album> {
-        val resolver: ContentResolver = getContext().contentResolver
-        val dataColumns: Array<String> = arrayOf(
-            MediaStore.Audio.Albums._ID,                //0
-            MediaStore.Audio.Albums.ALBUM,              //1
-            //MediaStore.Audio.Albums.ALBUM_ART,          //2
-            MediaStore.Audio.Albums.ARTIST,             //2
-            MediaStore.Audio.Albums.ARTIST_ID,          //3
-            MediaStore.Audio.Albums.NUMBER_OF_SONGS,    //4
-        )
-        val cursor = resolver.query(
-            MediaStore.Audio.Albums.EXTERNAL_CONTENT_URI,
-            dataColumns,
-            null,
-            null,
-            null
-        )
+    suspend fun querySongsFromAlbums(albumID: Int): ArrayList<Song> {
+        return withContext(Dispatchers.Default) {
+            val cursor: Cursor = getContext()
+                .contentResolver.query(
+                    MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, query,
+                    "is_music != 0 and album_id = $albumID", null, null
+                ) ?: return@withContext ArrayList()
 
-        val albums: ArrayList<Album> = ArrayList<Album>()
+            return@withContext loadSongs(cursor)
+        }
 
-        if (cursor != null) {
+    }
+
+    private suspend fun loadSongs(cursor: Cursor): ArrayList<Song> {
+
+        return withContext(Dispatchers.Default) {
+            val songs: ArrayList<Song> = ArrayList()
+
             if (cursor.moveToFirst()) {
-                var album: Album
+                var song: Song
                 do {
                     cursor.let {
-                        val art: String = if (!ignoreCacheAlbumArt) {
-                            getArtCache(it.getInt(0))
-                        } else {
-                            ""
-                        }
-                        album = Album(
-                            ObservableField(art), ObservableField(it.getInt(0)),
-                            ObservableField(it.getInt(4)), ObservableField(it.getString(1)),
+                        val artist = Artist(
+                            ObservableField(it.getInt(ARTIST_ID)),
+                            ObservableField(it.getString(ARTIST))
+                        )
+                        song = Song(
+                            ObservableField(File(it.getString(DATA))),// 文件路径
+                            ObservableField(it.getInt(ID)),// id
+                            ObservableField(it.getString(TITLE)),// 歌曲名
+                            ObservableField(it.getString(DISPLAY_NAME)),// 文件名
+                            ObservableField(it.getInt(DURATION)),// 时长
+                            ObservableField(artist),// 歌手
                             ObservableField(
-                                Artist(
-                                    ObservableField(it.getInt(3)),
-                                    ObservableField(it.getString(2))
+                                Album(
+                                    ObservableField(""),
+                                    ObservableField(it.getInt(ARTIST_ID)),
+                                    ObservableField(-1),
+                                    ObservableField(it.getString(ALBUM)),
+                                    ObservableField(artist)
                                 )
-                            )
+                            ),// 专辑
+                            ObservableField(it.getString(YEAR) ?: UNKNOWN),// 年代
+                            ObservableField(it.getString(MIME_TYPE).trim()),// 格式
+                            ObservableField(it.getString(SIZE)),// 文件大小
                         )
                     }
-                    albums.add(album)
+                    songs.add(song)
                 } while (cursor.moveToNext())
                 cursor.close()
             }
+            return@withContext songs
         }
-        return albums
+    }
+
+    @SuppressLint("Recycle")
+    suspend fun queryAlbum(): ArrayList<Album> {
+        return withContext(Dispatchers.Default) {
+            val resolver: ContentResolver = getContext().contentResolver
+            val dataColumns: Array<String> = arrayOf(
+                MediaStore.Audio.Albums._ID,                //0
+                MediaStore.Audio.Albums.ALBUM,              //1
+                MediaStore.Audio.Albums.ARTIST,             //2
+                MediaStore.Audio.Albums.ARTIST_ID,          //3
+                MediaStore.Audio.Albums.NUMBER_OF_SONGS,    //4
+            )
+            val cursor = resolver.query(
+                MediaStore.Audio.Albums.EXTERNAL_CONTENT_URI,
+                dataColumns,
+                null,
+                null,
+                null
+            )
+
+            val albums: ArrayList<Album> = ArrayList()
+
+            if (cursor != null) {
+                if (cursor.moveToFirst()) {
+                    var album: Album
+                    do {
+                        cursor.let {
+                            /*val art: String? = if (!ignoreCacheAlbumArt) {
+                                getArtCache(it.getInt(0))
+                            } else {
+                                ""
+                            }*/
+                            album = Album(
+                                ObservableField("art"), ObservableField(it.getInt(0)),
+                                ObservableField(it.getInt(4)), ObservableField(it.getString(1)),
+                                ObservableField(
+                                    Artist(
+                                        ObservableField(it.getInt(3)),
+                                        ObservableField(it.getString(2))
+                                    )
+                                )
+                            )
+                        }
+                        albums.add(album)
+                    } while (cursor.moveToNext())
+                    cursor.close()
+                }
+            }
+            return@withContext albums
+        }
     }
 
 

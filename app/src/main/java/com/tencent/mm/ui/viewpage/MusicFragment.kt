@@ -12,11 +12,15 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.lifecycle.ViewModelProvider
 import com.bumptech.glide.Glide
-import com.google.android.material.snackbar.Snackbar
 import com.tencent.mm.R
-import com.tencent.mm.data.locally.MediaStoreProvider
-import com.tencent.mm.data.locally.MusicPlay
+import com.tencent.mm.data.locally.utils.MediaStoreProvider
+import com.tencent.mm.data.locally.utils.MusicPlay
 import com.tencent.mm.getContext
+import com.tencent.mm.ui.viewpage.adapter.MusicItemRecyclerViewAdapter
+import com.tencent.mm.ui.viewpage.model.MusicViewModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import kotlin.concurrent.thread
 
 
@@ -46,57 +50,6 @@ class MusicFragment : Fragment(), OnPageSelectedChange {
                     columnCount <= 1 -> LinearLayoutManager(context)
                     else -> GridLayoutManager(context, columnCount)
                 }
-                post {
-                    val songs = MediaStoreProvider.querySongs()
-                    MusicItemRecyclerViewAdapter(songs).let {
-                        adapter = it
-                        it.onClickListener = viewModel
-                        it.onKeyListener = View.OnKeyListener { v, keyCode, event ->
-                            when (keyCode) {
-                                KeyEvent.KEYCODE_3 -> {
-                                    var position = getChildAdapterPosition(v)
-                                    position -= view.childCount + 1
-                                    scrollToPosition(position)
-                                    thread {
-                                        Thread.sleep(300)
-                                        v.post {
-                                            requestFocus()
-                                            scrollToPosition(position)
-                                            findViewHolderForAdapterPosition(position)
-                                                ?.itemView?.requestFocus()
-                                                ?: view.findViewHolderForPosition(position)
-                                                    ?.itemView?.requestFocus()
-                                                ?: Log.w(this@MusicFragment::class.java.toString(),
-                                                    "item == null")
-                                        }
-                                    }
-                                    true
-                                }
-                                KeyEvent.KEYCODE_9 -> {
-                                    var position = getChildAdapterPosition(v)
-                                    position += view.childCount - 1
-                                    scrollToPosition(position)
-                                    thread {
-                                        Thread.sleep(300)
-                                        v.post {
-                                            requestFocus()
-                                            scrollToPosition(position)
-                                            findViewHolderForAdapterPosition(position)
-                                                ?.itemView?.requestFocus()
-                                                ?: view.findViewHolderForPosition(position)
-                                                    ?.itemView?.requestFocus()
-                                                ?: Log.w(this@MusicFragment::class.java.toString(),
-                                                    "item == null")
-                                        }
-                                    }
-                                    true
-                                }
-                                else -> false
-                            }
-                        }
-                    }
-                    MusicPlay.playMode.update(songs)
-                }
                 view.setHasFixedSize(true)
                 view.addOnScrollListener(object : RecyclerView.OnScrollListener() {
                     override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
@@ -123,6 +76,53 @@ class MusicFragment : Fragment(), OnPageSelectedChange {
         return view
     }
 
+
+    override fun onStart() {
+        super.onStart()
+
+        GlobalScope.launch(Dispatchers.Main) {
+            with(view!! as RecyclerView) {
+                val songs = MediaStoreProvider.querySongs()
+                MusicItemRecyclerViewAdapter(songs).let {
+                    adapter = it
+                    it.onClickListener = viewModel
+                    it.onKeyListener = View.OnKeyListener { v, keyCode, event ->
+                        when (keyCode) {
+                            KeyEvent.KEYCODE_3 -> {
+                                var position = getChildAdapterPosition(v)
+                                position -= childCount - 1
+                                viewModel.scrollToPosition(this,position)
+                                thread {
+                                    Thread.sleep(300)
+                                    v.post {
+                                        requestFocus()
+                                        viewModel.scrollToPosition(this,position)
+                                    }
+                                }
+                                true
+                            }
+                            KeyEvent.KEYCODE_9 -> {
+                                var position = getChildAdapterPosition(v)
+                                position += childCount - 1
+                                viewModel.scrollToPosition(this,position)
+                                thread {
+                                    Thread.sleep(300)
+                                    v.post {
+                                        requestFocus()
+                                        viewModel.scrollToPosition(this,position)
+                                    }
+                                }
+                                true
+                            }
+                            else -> false
+                        }
+                    }
+                }
+                MusicPlay.playMode.update(songs)
+            }
+        }
+    }
+
     override fun onPageSelectedChange(hasFocus: Boolean, position: Int) {
         if (view is RecyclerView) {
             with((view as RecyclerView)) {
@@ -131,21 +131,9 @@ class MusicFragment : Fragment(), OnPageSelectedChange {
                 }
                 val adapter = adapter as MusicItemRecyclerViewAdapter
                 if (hasFocus) {
-                    if (adapter.lastHasFocusHolder != -1) {
-                        scrollToPosition(adapter.lastHasFocusHolder)
-                        findViewHolderForAdapterPosition(adapter.lastHasFocusHolder)
-                            ?.itemView?.requestFocus()
-                            ?: Log.w(this@MusicFragment::class.java.toString(), "item == null")
-                    } else Log.w(
-                        this@MusicFragment::class.java.toString(),
-                        "lastHasFocusHolder = " + adapter.lastHasFocusHolder
-                    )
+                    viewModel.scrollToPosition(this,adapter.lastHasFocusHolder)
                 } else {
                     adapter.lastHasFocusHolder = adapter.notFocusHolder
-                    Log.d(
-                        this@MusicFragment::class.java.toString(),
-                        "lastHasFocusHolder = " + adapter.lastHasFocusHolder
-                    )
                 }
             }
         }
@@ -161,6 +149,7 @@ class MusicFragment : Fragment(), OnPageSelectedChange {
 
         const val ARG_COLUMN_COUNT = "column-count"
         var title = getContext().resources.getString(R.string.app_name)
+
         @JvmStatic
         fun newInstance(columnCount: Int) =
             MusicFragment().apply {

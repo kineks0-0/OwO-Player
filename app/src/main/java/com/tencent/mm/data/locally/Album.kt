@@ -1,6 +1,7 @@
 package com.tencent.mm.data.locally
 
 import androidx.databinding.ObservableField
+import com.tencent.mm.data.locally.utils.MediaStoreProvider
 
 data class Album (
     //var album    : String = MediaStoreProvider.UNKNOWN,

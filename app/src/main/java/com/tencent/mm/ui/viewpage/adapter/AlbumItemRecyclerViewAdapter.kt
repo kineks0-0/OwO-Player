@@ -1,4 +1,4 @@
-package com.tencent.mm.ui.viewpage
+package com.tencent.mm.ui.viewpage.adapter
 
 import android.annotation.SuppressLint
 import android.view.LayoutInflater
@@ -10,7 +10,7 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.bitmap.CenterCrop
 import com.tencent.mm.R
 import com.tencent.mm.data.locally.Album
-import com.tencent.mm.data.locally.MediaStoreProvider
+import com.tencent.mm.data.locally.utils.MediaStoreProvider
 import com.tencent.mm.databinding.AlbumItemFragmentBinding
 
 

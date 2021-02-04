@@ -1,4 +1,4 @@
-package com.tencent.mm.ui.viewpage
+package com.tencent.mm.ui.viewpage.adapter
 
 import androidx.recyclerview.widget.RecyclerView
 import android.view.LayoutInflater

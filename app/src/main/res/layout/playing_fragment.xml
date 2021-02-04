@@ -1,11 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-
-<!--FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context=".ui.viewpage.PlayingFragment"-->
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools">
@@ -15,7 +8,7 @@
         <import type="android.view.View" />
         <variable
             name="playModel"
-            type="com.tencent.mm.ui.viewpage.PlayingViewModel" />
+            type="com.tencent.mm.ui.viewpage.model.PlayingViewModel" />
     </data>
 
 
@@ -29,14 +22,15 @@
 
         <ImageView
             android:id="@+id/nextPlayImageView2"
-            android:layout_width="95dp"
-            android:layout_height="95dp"
+            android:layout_height="0dp"
+            android:layout_width="0dp"
+            app:layout_constraintWidth_default="percent"
+            app:layout_constraintWidth_percent=".3"
+            app:layout_constraintDimensionRatio="H,1:1"
             android:layout_marginStart="45dp"
             android:layout_marginLeft="45dp"
             android:background="@drawable/view_elevation"
-            android:clickable="true"
             android:contentDescription="@string/app_name"
-            android:focusable="true"
             android:song="@{playModel.songNext2}"
             android:visibility="@{playModel.nextSong(1) ? View.VISIBLE : View.INVISIBLE}"
             app:layout_constraintBottom_toBottomOf="@+id/nextPlayImageView"
@@ -46,14 +40,15 @@
 
         <ImageView
             android:id="@+id/nextPlayImageView"
-            android:layout_width="120dp"
-            android:layout_height="120dp"
+            android:layout_height="0dp"
+            android:layout_width="0dp"
+            app:layout_constraintWidth_default="percent"
+            app:layout_constraintWidth_percent=".4"
+            app:layout_constraintDimensionRatio="H,1:1"
             android:layout_marginStart="60dp"
             android:layout_marginLeft="60dp"
             android:background="@drawable/view_elevation"
-            android:clickable="true"
             android:contentDescription="@string/app_name"
-            android:focusable="true"
             android:song="@{playModel.songNext}"
             android:visibility="@{playModel.nextSong(0) ? View.VISIBLE:View.INVISIBLE}"
             app:layout_constraintBottom_toBottomOf="@+id/playingImageView"
@@ -64,8 +59,11 @@
 
         <ImageView
             android:id="@+id/playingImageView"
-            android:layout_width="150dp"
-            android:layout_height="150dp"
+            android:layout_height="0dp"
+            android:layout_width="0dp"
+            app:layout_constraintWidth_default="percent"
+            app:layout_constraintWidth_percent=".5"
+            app:layout_constraintDimensionRatio="H,1:1"
             android:layout_marginTop="10dp"
             android:background="@drawable/view_elevation"
             android:clickable="true"
@@ -124,9 +122,11 @@
             tools:text="testestsetsetsetsettestestsetestsetse" />
 
         <ImageView
-            android:id="@+id/playImageView"
+            android:id="@+id/playButton"
             android:layout_width="35dp"
-            android:layout_height="35dp"
+            android:layout_height="0dp"
+            app:layout_constraintDimensionRatio="1:1"
+            app:tint="?attr/colorControlNormal"
             android:background="@drawable/white_ripple"
             android:clickable="true"
             android:contentDescription="@string/playing"
@@ -139,9 +139,11 @@
             app:srcCompat="@drawable/ic_play_arrow_black_48dp" />
 
         <ImageView
-            android:id="@+id/nextImageView"
+            android:id="@+id/nextPlay"
             android:layout_width="35dp"
-            android:layout_height="35dp"
+            android:layout_height="0dp"
+            app:layout_constraintDimensionRatio="1:1"
+            app:tint="?attr/colorControlNormal"
             android:layout_marginStart="32dp"
             android:layout_marginLeft="32dp"
             android:background="@drawable/white_ripple"
@@ -149,14 +151,16 @@
             android:contentDescription="@string/next_play"
             android:focusable="true"
             android:onClick="@{playModel::nextSong}"
-            app:layout_constraintStart_toEndOf="@+id/playImageView"
-            app:layout_constraintTop_toTopOf="@+id/playImageView"
+            app:layout_constraintStart_toEndOf="@+id/playButton"
+            app:layout_constraintTop_toTopOf="@+id/playButton"
             app:srcCompat="@drawable/ic_skip_next_black_48dp" />
 
         <ImageView
-            android:id="@+id/perImageView"
+            android:id="@+id/perIPlay"
             android:layout_width="35dp"
-            android:layout_height="35dp"
+            android:layout_height="0dp"
+            app:layout_constraintDimensionRatio="1:1"
+            app:tint="?attr/colorControlNormal"
             android:layout_marginEnd="32dp"
             android:layout_marginRight="32dp"
             android:background="@drawable/white_ripple"
@@ -164,8 +168,8 @@
             android:contentDescription="@string/previous_play"
             android:focusable="true"
             android:onClick="@{playModel::preSong}"
-            app:layout_constraintEnd_toStartOf="@+id/playImageView"
-            app:layout_constraintTop_toTopOf="@+id/playImageView"
+            app:layout_constraintEnd_toStartOf="@+id/playButton"
+            app:layout_constraintTop_toTopOf="@+id/playButton"
             app:srcCompat="@drawable/ic_skip_previous_black_48dp" />
 
 

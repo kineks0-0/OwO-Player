@@ -1,4 +1,4 @@
-package com.tencent.mm.data.locally
+package com.tencent.mm.data.locally.utils
 
 import android.annotation.SuppressLint
 import android.content.BroadcastReceiver
@@ -24,7 +24,7 @@ object HeadSetUtil {
      * @param headSetListener
      */
     fun setOnHeadSetListener(headSetListener: OnHeadSetListener?) {
-        this.headSetListener = headSetListener
+        HeadSetUtil.headSetListener = headSetListener
     }
 
     /**

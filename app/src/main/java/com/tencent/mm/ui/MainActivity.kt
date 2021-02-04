@@ -6,19 +6,15 @@ import android.os.Bundle
 import android.util.Log
 import android.view.KeyEvent
 import android.view.View
-import android.widget.ImageView
 import androidx.appcompat.app.AppCompatActivity
-import androidx.databinding.BindingAdapter
-import androidx.databinding.Observable
 import androidx.fragment.app.*
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.viewpager.widget.ViewPager
 import com.tencent.mm.R
-import com.tencent.mm.data.locally.MusicPlay
-import com.tencent.mm.data.locally.Song
 import com.tencent.mm.databinding.ActivityMainBinding
 import com.tencent.mm.ui.viewpage.*
+import com.tencent.mm.ui.viewpage.model.PlayingViewModel
 import kotlin.concurrent.thread
 
 class MainActivity : AppCompatActivity() {
@@ -34,7 +30,9 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
         playingViewModel = ViewModelProvider(this).get(PlayingViewModel::class.java)
+        playingViewModel.onCreate(this)
 
         binding.navView.setOnNavigationItemSelectedListener { item ->
             when (item.itemId) {
@@ -43,23 +41,8 @@ class MainActivity : AppCompatActivity() {
                 R.id.navigation_playing -> binding.viewPage.currentItem = 2
                 R.id.navigation_setting -> binding.viewPage.currentItem = 3
             }
-            //binding.viewPage.requestFocus()
             true
         }
-
-        /*binding.view.isFocusable = true
-        binding.view.isClickable = true
-        binding.view.setOnFocusChangeListener { v, hasFocus ->
-            if (hasFocus)
-                thread {
-                    Thread.sleep(500)
-                    v.post {
-                        binding.viewPage.requestFocus()
-                        pagerAdapter.getItem(binding.viewPage.currentItem).requireView().requestFocus()
-                    }
-                }
-
-        }*/
 
         pagerAdapter = PagerAdapter(supportFragmentManager)
         binding.viewPage.adapter = pagerAdapter
@@ -110,10 +93,10 @@ class MainActivity : AppCompatActivity() {
 
     override fun onStart() {
         super.onStart()
+        playingViewModel.onStart(this)
 
         if (debugMode)
             findFocusView()
-
     }
 
     private fun findFocusView() {
@@ -144,10 +127,11 @@ class MainActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
+        playingViewModel.onDestroy(this)
     }
 
     override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
-        return playingViewModel.onKeyDown(keyCode,event)
+        return playingViewModel.onKeyDown(keyCode,event,this)
     }
 
 

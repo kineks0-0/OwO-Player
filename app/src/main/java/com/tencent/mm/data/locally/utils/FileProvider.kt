@@ -1,4 +1,4 @@
-package com.tencent.mm.data.locally
+package com.tencent.mm.data.locally.utils
 
 import com.tencent.mm.OwOPlayerApplication
 import com.tencent.mm.getContext
