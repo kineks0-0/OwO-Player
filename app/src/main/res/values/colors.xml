@@ -8,8 +8,8 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
 
-    <color name="viewBackground">#EBE6FF</color>
-    <color name="viewBackground2">#E0ECFF</color>
+    <color name="viewBackground">#E6E0FF</color>
+    <color name="viewBackground2">#D3E4FF</color>
     <color name="viewElevation">#0D9E9E9E</color>
 
     <color name="ripple">#1A393939</color>
@@ -17,8 +17,8 @@
 
     <color name="background">#00000000</color>
 
-    <color name="colorPrimary">@color/purple_500</color>
-    <color name="colorPrimaryVariant">@color/purple_700</color>
+    <color name="colorPrimary">#5A35FF</color>
+    <color name="colorPrimaryVariant">#5416DF</color>
     <color name="colorOnPrimary">@color/white</color>
     <!-- Secondary brand color. -->
     <color name="colorSecondary">@color/teal_200</color>

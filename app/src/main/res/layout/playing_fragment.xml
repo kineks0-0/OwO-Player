@@ -59,23 +59,23 @@
 
         <ImageView
             android:id="@+id/playingImageView"
-            android:layout_height="0dp"
             android:layout_width="0dp"
-            app:layout_constraintWidth_default="percent"
-            app:layout_constraintWidth_percent=".5"
-            app:layout_constraintDimensionRatio="H,1:1"
-            android:layout_marginTop="10dp"
+            android:layout_height="0dp"
+            android:layout_marginTop="16dp"
             android:background="@drawable/view_elevation"
             android:clickable="true"
             android:contentDescription="@string/app_name"
             android:focusable="true"
             android:onClick="@{playModel::switchPlayMode}"
             android:song="@{playModel.song}"
+            app:layout_constraintDimensionRatio="H,1:1"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/songTitle2TextView" />
+            app:layout_constraintTop_toBottomOf="@+id/songTitle2TextView"
+            app:layout_constraintWidth_default="percent"
+            app:layout_constraintWidth_percent=".5" />
 
-        <TextView
+        <!--TextView
             android:id="@+id/songTitleTextView"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -97,12 +97,13 @@
             app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            tools:text="testestsetsetsetsettestestsetestsetse" />
+            tools:text="testestsetsetsetsettestestsetestsetse" /-->
 
         <TextView
             android:id="@+id/songTitle2TextView"
             android:layout_width="wrap_content"
             android:layout_height="0dp"
+            android:layout_marginTop="16dp"
             android:background="@drawable/view_background2"
             android:ellipsize="end"
             android:maxLength="25"
@@ -116,9 +117,9 @@
             android:shadowRadius="30"
             android:text="@{playModel.song.artist.name + '-' + playModel.song.album.title}"
             android:textSize="15sp"
-            app:layout_constraintEnd_toEndOf="@+id/songTitleTextView"
-            app:layout_constraintStart_toStartOf="@+id/songTitleTextView"
-            app:layout_constraintTop_toBottomOf="@+id/songTitleTextView"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
             tools:text="testestsetsetsetsettestestsetestsetse" />
 
         <ImageView
@@ -174,7 +175,5 @@
 
 
     </androidx.constraintlayout.widget.ConstraintLayout>
-
-    <!--/FrameLayout-->
 
 </layout>

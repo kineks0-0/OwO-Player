@@ -13,14 +13,18 @@ import android.view.ViewGroup
 import androidx.lifecycle.ViewModelProvider
 import com.bumptech.glide.Glide
 import com.tencent.mm.R
+import com.tencent.mm.data.locally.Song
 import com.tencent.mm.data.locally.utils.MediaStoreProvider
 import com.tencent.mm.data.locally.utils.MusicPlay
+import com.tencent.mm.databinding.MusicItemFragmentBinding
 import com.tencent.mm.getContext
+import com.tencent.mm.ui.viewpage.adapter.BaseRecyclerViewAdapter
 import com.tencent.mm.ui.viewpage.adapter.MusicItemRecyclerViewAdapter
 import com.tencent.mm.ui.viewpage.model.MusicViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import java.lang.Thread.sleep
 import kotlin.concurrent.thread
 
 
@@ -28,6 +32,11 @@ class MusicFragment : Fragment(), OnPageSelectedChange {
 
     private var columnCount = 1
     private lateinit var viewModel: MusicViewModel
+
+    override fun onActivityCreated(savedInstanceState: Bundle?) {
+        super.onActivityCreated(savedInstanceState)
+        viewModel = ViewModelProvider(this).get(MusicViewModel::class.java)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -47,30 +56,19 @@ class MusicFragment : Fragment(), OnPageSelectedChange {
         if (view is RecyclerView) {
             with(view) {
                 layoutManager = when {
-                    columnCount <= 1 -> LinearLayoutManager(context)
-                    else -> GridLayoutManager(context, columnCount)
-                }
-                view.setHasFixedSize(true)
-                view.addOnScrollListener(object : RecyclerView.OnScrollListener() {
-                    override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
-                        super.onScrollStateChanged(recyclerView, newState)
-                        when (newState) {
-                            //由于用户的操作，屏幕产生惯性滑动，停止加载图片
-                            RecyclerView.SCROLL_STATE_SETTLING -> Glide.with(recyclerView.context)
-                                .pauseRequests()
-                            //当屏幕滚动且用户使用的触碰或手指还在屏幕上，停止加载图片
-                            RecyclerView.SCROLL_STATE_DRAGGING -> Glide.with(recyclerView.context)
-                                .pauseRequests()
-
-                            RecyclerView.SCROLL_STATE_IDLE -> Glide.with(recyclerView.context)
-                                .resumeRequests()
-                        }
+                    columnCount <= 1 -> LinearLayoutManager(context).apply {
+                        scrollToPositionWithOffset(
+                            view.adapter?.itemCount ?: 0 - 1,
+                            Integer.MIN_VALUE
+                        )
                     }
-                })
-                /*view.setOnFocusChangeListener { v, hasFocus ->
-                    if (hasFocus)
-                        requestFocus()
-                }*/
+                    else -> GridLayoutManager(context, columnCount).apply {
+                        scrollToPositionWithOffset(
+                            view.adapter?.itemCount ?: 0 - 1,
+                            Integer.MIN_VALUE
+                        )
+                    }
+                }
             }
         }
         return view
@@ -85,38 +83,8 @@ class MusicFragment : Fragment(), OnPageSelectedChange {
                 val songs = MediaStoreProvider.querySongs()
                 MusicItemRecyclerViewAdapter(songs).let {
                     adapter = it
-                    it.onClickListener = viewModel
-                    it.onKeyListener = View.OnKeyListener { v, keyCode, event ->
-                        when (keyCode) {
-                            KeyEvent.KEYCODE_3 -> {
-                                var position = getChildAdapterPosition(v)
-                                position -= childCount - 1
-                                viewModel.scrollToPosition(this,position)
-                                thread {
-                                    Thread.sleep(300)
-                                    v.post {
-                                        requestFocus()
-                                        viewModel.scrollToPosition(this,position)
-                                    }
-                                }
-                                true
-                            }
-                            KeyEvent.KEYCODE_9 -> {
-                                var position = getChildAdapterPosition(v)
-                                position += childCount - 1
-                                viewModel.scrollToPosition(this,position)
-                                thread {
-                                    Thread.sleep(300)
-                                    v.post {
-                                        requestFocus()
-                                        viewModel.scrollToPosition(this,position)
-                                    }
-                                }
-                                true
-                            }
-                            else -> false
-                        }
-                    }
+                    it.onClickListener = viewModel.onClick
+                    it.onKeyListener = viewModel.getOnKeyListener(this, it.father())
                 }
                 MusicPlay.playMode.update(songs)
             }
@@ -131,7 +99,20 @@ class MusicFragment : Fragment(), OnPageSelectedChange {
                 }
                 val adapter = adapter as MusicItemRecyclerViewAdapter
                 if (hasFocus) {
-                    viewModel.scrollToPosition(this,adapter.lastHasFocusHolder)
+                    //scrollToPosition(adapter.lastHasFocusHolder)
+                    findViewHolderForAdapterPosition(adapter.lastHasFocusHolder)?.itemView?.let {
+                        it.requestFocus()
+                        it.clearFocus()
+                        it.requestFocus()
+                        thread {
+                            sleep(20)
+                            post {
+                                it.clearFocus()
+                                it.requestFocus()
+                            }
+                        }
+                    }
+
                 } else {
                     adapter.lastHasFocusHolder = adapter.notFocusHolder
                 }
@@ -140,10 +121,6 @@ class MusicFragment : Fragment(), OnPageSelectedChange {
 
     }
 
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
-        viewModel = ViewModelProvider(this).get(MusicViewModel::class.java)
-    }
 
     companion object {
 

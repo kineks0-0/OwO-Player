@@ -59,9 +59,11 @@
                 android:text='@{num + "    " + song.name}'
                 android:textSize="14sp"
                 android:textStyle="bold"
+                app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toEndOf="@+id/imageView"
-                app:layout_constraintTop_toTopOf="parent" />
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintVertical_bias="0.26" />
 
             <TextView
                 android:id="@+id/content"
@@ -78,7 +80,6 @@
                 android:maxLines="1"
                 android:text='@{"  " + song.artist.name + " - " + song.album.title}'
                 android:textSize="12sp"
-                app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toEndOf="@+id/imageView"
                 app:layout_constraintTop_toBottomOf="@+id/item_number" />

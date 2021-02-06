@@ -284,9 +284,9 @@ object MusicPlay {
                 pausePlay()
             else {
                 continuesPlay()
-                if (!mediaPlayer.isPlaying)
+                /*if (!mediaPlayer.isPlaying)
                     if (playList.size != 0)
-                        playSong(0)
+                        playSong(0)*/
             }
         }
 

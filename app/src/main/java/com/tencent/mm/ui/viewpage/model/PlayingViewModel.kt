@@ -18,38 +18,47 @@ import com.tencent.mm.R
 import com.tencent.mm.data.locally.utils.MusicPlay
 import com.tencent.mm.data.locally.Song
 import com.tencent.mm.data.locally.utils.AudioMngHelper
+import com.tencent.mm.data.locally.utils.MusicPlay.playMode
 import com.tencent.mm.getContext
+import com.tencent.mm.ui.MainActivity
 
 class PlayingViewModel : ViewModel() {
 
 
-    private val playMode = MusicPlay.playMode
-    private val audioMngHelper = AudioMngHelper.newInstance()
-    @SuppressLint("StaticFieldLeak")
-    private var playService: PlayService? = null
-    private var mBound: Boolean = false
+    companion object {
+        //private val playMode = MusicPlay.playMode
+        private val audioMngHelper = AudioMngHelper.newInstance()
 
-    /** Defines callbacks for service binding, passed to bindService()  */
-    private val connection = object : ServiceConnection {
+        @SuppressLint("StaticFieldLeak")
+        private var playService: PlayService? = null
+        private var mBound: Boolean = false
 
-        override fun onServiceConnected(className: ComponentName, service: IBinder) {
-            // We've bound to LocalService, cast the IBinder and get LocalService instance
-            val binder = service as PlayService.PlayServiceBind
-            playService = binder.getServiceSelf()
-            //serviceBind = binder
-            mBound = true
+        /** Defines callbacks for service binding, passed to bindService()  */
+        private val connection by lazy {
+            object : ServiceConnection {
+
+                override fun onServiceConnected(className: ComponentName, service: IBinder) {
+                    // We've bound to LocalService, cast the IBinder and get LocalService instance
+                    val binder = service as PlayService.PlayServiceBind
+                    playService = binder.getServiceSelf()
+                    //serviceBind = binder
+                    mBound = true
+                }
+
+                override fun onServiceDisconnected(arg0: ComponentName) {
+                    mBound = false
+                }
+            }
         }
 
-        override fun onServiceDisconnected(arg0: ComponentName) {
-            mBound = false
+        var lastCurrentItem = 0
+        val playingFragmentTitle: MutableLiveData<String> by lazy { MutableLiveData() }
+
+        init {
+            playingFragmentTitle.value = getContext().resources.getString(R.string.app_name)
         }
     }
 
-    val playingFragmentTitle: MutableLiveData<String> by lazy { MutableLiveData() }
-
-    init {
-        playingFragmentTitle.value = getContext().resources.getString(R.string.app_name)
-    }
 
     val song: ObservableField<Song> = ObservableField()
         get() {
@@ -126,50 +135,77 @@ class PlayingViewModel : ViewModel() {
         }
     }
 
-    fun onKeyDown(keyCode: Int, event: KeyEvent?, activity: Activity): Boolean {
-        return when(keyCode) {
-            KeyEvent.KEYCODE_0 -> {
-                false
-            }
-            KeyEvent.KEYCODE_1 -> {
-                false
-            }
-            KeyEvent.KEYCODE_2 -> {
-                audioMngHelper.addVoice100()
-                true
-            }
-            KeyEvent.KEYCODE_3 -> {
-                false
-            }
-            KeyEvent.KEYCODE_4 -> {
-                playMode.previousSong(true,0)
-                true
-            }
-            KeyEvent.KEYCODE_5 -> {
-                playMode.play()
-                true
-            }
-            KeyEvent.KEYCODE_6 -> {
-                playMode.nextSong()
-                true
-            }
-            KeyEvent.KEYCODE_7 -> {
-                false
-            }
-            KeyEvent.KEYCODE_8 -> {
-                audioMngHelper.subVoice100()
-                true
-            }
-            KeyEvent.KEYCODE_9 -> {
-                false
-            }
-            KeyEvent.KEYCODE_BACK -> {
-                activity.finish()
-                true
-            }
+    fun onKeyDown(keyCode: Int, event: KeyEvent?, activity: MainActivity): Boolean {
+        return with(activity) {
+            when (keyCode) {
+                KeyEvent.KEYCODE_DPAD_LEFT -> {
+                    if (binding.viewPage.currentItem == 0) {
+                        binding.viewPage.currentItem = pagerAdapter.count - 1
+                        true
+                    } else {
+                        false
+                    }
+                }
+                KeyEvent.KEYCODE_DPAD_RIGHT -> {
+                    if (binding.viewPage.currentItem == pagerAdapter.count - 1) {
+                        binding.viewPage.currentItem = 0
+                        true
+                    } else {
+                        false
+                    }
+                }
+                KeyEvent.KEYCODE_0 -> {
+                    false
+                }
+                KeyEvent.KEYCODE_1 -> {
+                    false
+                }
+                KeyEvent.KEYCODE_2 -> {
+                    audioMngHelper.addVoice100()
+                    Snackbar.make(activity.binding.root,audioMngHelper.get100CurrentVolume().toString() + "%",Snackbar.LENGTH_SHORT).show()
+                    true
+                }
+                KeyEvent.KEYCODE_3 -> {
+                    false
+                }
+                KeyEvent.KEYCODE_4 -> {
+                    playMode.previousSong(true, 0)
+                    true
+                }
+                KeyEvent.KEYCODE_5 -> {
+                    playMode.play()
+                    true
+                }
+                KeyEvent.KEYCODE_6 -> {
+                    playMode.nextSong()
+                    true
+                }
+                KeyEvent.KEYCODE_7 -> {
+                    if (activity.binding.viewPage.currentItem != 2) {
+                        lastCurrentItem = activity.binding.viewPage.currentItem
+                        activity.binding.viewPage.currentItem = 2
+                    } else {
+                        activity.binding.viewPage.currentItem = lastCurrentItem
+                    }
+                    true
+                }
+                KeyEvent.KEYCODE_8 -> {
+                    audioMngHelper.subVoice100()
+                    Snackbar.make(activity.binding.root,audioMngHelper.get100CurrentVolume().toString() + "%",Snackbar.LENGTH_SHORT).show()
+                    true
+                }
+                KeyEvent.KEYCODE_9 -> {
+                    false
+                }
+                KeyEvent.KEYCODE_BACK -> {
+                    activity.finish()
+                    true
+                }
 
-            else -> false
+                else -> false
+            }
         }
+
     }
 
 

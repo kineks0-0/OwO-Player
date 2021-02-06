@@ -1,7 +1,5 @@
 package com.tencent.mm.ui.viewpage.adapter
 
-import android.annotation.SuppressLint
-import androidx.recyclerview.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -19,55 +17,21 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 
 
-class MusicItemRecyclerViewAdapter(val songs: List<Song>) :
-    RecyclerView.Adapter<MusicItemRecyclerViewAdapter.ViewHolder>() {
+class MusicItemRecyclerViewAdapter(songs: List<Song>) :
+    BaseRecyclerViewAdapter<MusicItemFragmentBinding, Song>(songs) {
 
 
-    var onClickListener: OnClick = object : OnClick {
-        override fun onClick(position: Int, holder: ViewHolder, adapter: MusicItemRecyclerViewAdapter) {}
-    }
-    var onKeyListener =  View.OnKeyListener { v, keyCode, event ->
-        false
-    }
-
-
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        val binding = MusicItemFragmentBinding.inflate(LayoutInflater.from(parent.context)
-            , parent, false)
-        val holder = ViewHolder(binding)
-        binding.clickLayout.setOnFocusChangeListener { _, hasFocus ->
-            if (hasFocus) {
-                hasFocusHolder = holder.adapterPosition
-            } else {
-                notFocusHolder = holder.adapterPosition
-            }
-        }
-        binding.clickLayout.setOnClickListener {
-            onClickListener.onClick(holder.adapterPosition, holder, this)
-        }
-        binding.clickLayout.setOnKeyListener { v, keyCode, event ->
-            onKeyListener.onKey(holder.itemView,keyCode,event)
-        }
-        return holder
-    }
-
-    private var hasFocusHolder = -1
-    var notFocusHolder = -1
-    var lastHasFocusHolder = -1
-
-    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+    override fun onBindViewHolder(
+        holder: BaseRecyclerViewAdapter<MusicItemFragmentBinding, Song>.ViewHolder, position: Int
+    ) {
         holder.binding.num = position.toString()
-        holder.binding.song = songs[position]
+        holder.binding.song = list[position]
     }
 
-    override fun getItemCount(): Int = songs.size
-
-    interface OnClick {
-        fun onClick(position: Int, holder: ViewHolder, adapter: MusicItemRecyclerViewAdapter)
+    override val inflate: (ViewGroup) -> MusicItemFragmentBinding = {
+        MusicItemFragmentBinding.inflate(LayoutInflater.from(it.context), it, false)
     }
-
-    inner class ViewHolder(val binding: MusicItemFragmentBinding) :
-        RecyclerView.ViewHolder(binding.root)
+    override val clickLayout: (binder: MusicItemFragmentBinding) -> View = { it.clickLayout }
 
     companion object {
         @BindingAdapter("android:music")
@@ -83,5 +47,7 @@ class MusicItemRecyclerViewAdapter(val songs: List<Song>) :
             }
         }
     }
+
+
 
 }

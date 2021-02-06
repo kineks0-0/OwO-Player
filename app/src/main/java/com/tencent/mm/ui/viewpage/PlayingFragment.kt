@@ -40,7 +40,7 @@ class PlayingFragment : Fragment(), OnPageSelectedChange {
                                 if (it != null)
                                     return@let MediaStoreProvider.getArtUri(it)
                                 else
-                                    return@let MediaStoreProvider.UNKNOWN_ART_RES
+                                    return@let null//MediaStoreProvider.UNKNOWN_ART_RES
                             }
                         )
                         .placeholder(imageView.drawable?:imageView.background)
@@ -78,6 +78,7 @@ class PlayingFragment : Fragment(), OnPageSelectedChange {
         override fun onViewRedraw() {
             binding.playModel = viewModel
             onPlayButtonRedraw()
+            PlayingViewModel.playingFragmentTitle.value = viewModel.song.get()!!.name.get()!!
         }
 
         fun onPlayButtonRedraw() {
@@ -132,11 +133,6 @@ class PlayingFragment : Fragment(), OnPageSelectedChange {
 
     }
 
-    override fun onResume() {
-        super.onResume()
-        //MusicPlay.onPlayListener.onViewRedraw()
-    }
-
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         viewModel = ViewModelProvider(this).get(PlayingViewModel::class.java)
@@ -149,7 +145,9 @@ class PlayingFragment : Fragment(), OnPageSelectedChange {
     }
 
     override fun onPageSelectedChange(hasFocus: Boolean, position: Int) {
-
+        if (hasFocus) {
+            binding.playButton.requestFocus()
+        }
     }
 
 }

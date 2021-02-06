@@ -22,7 +22,7 @@ class MainActivity : AppCompatActivity() {
     lateinit var binding: ActivityMainBinding
     private val debugMode: Boolean = false
 
-    private lateinit var pagerAdapter: PagerAdapter
+    lateinit var pagerAdapter: PagerAdapter
     private lateinit var playingViewModel: PlayingViewModel
 
 
@@ -80,13 +80,15 @@ class MainActivity : AppCompatActivity() {
         onPageChangeCallback.onPageSelected(binding.viewPage.currentItem)
 
         val playingFragmentTitleObserve = Observer<String> { newTitle ->
-            Log.e(this::class.java.toString(),"Title update")
-            //if (binding.viewPage.currentItem == 2) {
-                this.supportActionBar?.title = newTitle
-            //}
+            //Log.d(this::class.java.toString(),"Title update")
+            if (binding.viewPage.currentItem == 2) {
+                this.supportActionBar?.let {
+                    it.title = newTitle
+                } ?: run { title = newTitle }
+            }
         }
 
-        playingViewModel.playingFragmentTitle.observe(this, playingFragmentTitleObserve)
+        PlayingViewModel.playingFragmentTitle.observe(this, playingFragmentTitleObserve)
 
     }
 
@@ -144,10 +146,6 @@ class MainActivity : AppCompatActivity() {
         private val playingFragment: PlayingFragment = PlayingFragment.newInstance()
         private val settingFragment: SettingFragment = SettingFragment.newInstance(1)
 
-        init {
-            //PlayingFragment.title.
-        }
-
         override fun getCount(): Int = 4
 
         override fun getItem(i: Int): Fragment {
@@ -174,7 +172,7 @@ class MainActivity : AppCompatActivity() {
             return when (position) {
                 0 -> MusicFragment.title
                 1 -> AlbumFragment.title
-                2 -> playingViewModel.playingFragmentTitle.value
+                2 -> PlayingViewModel.playingFragmentTitle.value
                 3 -> SettingFragment.title
                 else -> "OBJECT ${(position + 1)}"
             } ?: getString(R.string.app_name)
