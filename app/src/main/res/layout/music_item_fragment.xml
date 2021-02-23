@@ -4,44 +4,48 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <data>
+
         <variable
             name="adapter"
             type="com.studio.owo.player.ui.viewpage.adapter.MusicItemRecyclerViewAdapter" />
+
         <variable
             name="song"
             type="com.studio.owo.player.data.locally.Song" />
+
         <variable
             name="num"
             type="String" />
     </data>
 
     <androidx.cardview.widget.CardView
-        app:cardPreventCornerOverlap="false"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        app:cardCornerRadius="5dp"
+        app:cardPreventCornerOverlap="false">
 
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/clickLayout"
             android:layout_width="match_parent"
             android:layout_height="70dp"
-            android:clickable="true"
-            android:focusable="true"
             android:background="@drawable/white_ripple"
-            android:descendantFocusability="blocksDescendants">
+            android:clickable="true"
+            android:descendantFocusability="blocksDescendants"
+            android:focusable="true">
 
             <ImageView
                 android:id="@+id/imageView"
                 android:layout_width="75dp"
                 android:layout_height="0dp"
-                app:layout_constraintDimensionRatio="1:1"
                 android:contentDescription="@string/albums_art"
-                android:scaleType="centerCrop"
                 android:music="@{song}"
+                android:scaleType="centerCrop"
                 app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintDimensionRatio="1:1"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
-                tools:srcCompat="@drawable/ic_launcher_background" />
+                tools:srcCompat="@drawable/unknown" />
 
 
             <TextView

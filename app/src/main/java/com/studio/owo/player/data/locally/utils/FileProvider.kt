@@ -1,7 +1,7 @@
 package com.studio.owo.player.data.locally.utils
 
 import com.studio.owo.player.OwOPlayerApplication
-import com.tencent.mm.getContext
+import com.studio.owo.player.getContext
 import java.io.File
 
 object FileProvider {

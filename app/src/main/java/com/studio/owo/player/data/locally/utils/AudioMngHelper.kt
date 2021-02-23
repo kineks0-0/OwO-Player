@@ -4,7 +4,7 @@ package com.studio.owo.player.data.locally.utils
 import android.content.Context
 import android.media.AudioManager
 import androidx.annotation.IntDef
-import com.tencent.mm.getContext
+import com.studio.owo.player.getContext
 import kotlin.math.ceil
 import kotlin.math.floor
 
@@ -36,9 +36,9 @@ class AudioMngHelper(context: Context) {
     @kotlin.annotation.Retention(AnnotationRetention.SOURCE)
     annotation class FLAG
 
-    val systemMaxVolume: Int
+    private val systemMaxVolume: Int
         get() = audioManager.getStreamMaxVolume(nowAudioType)
-    val systemCurrentVolume: Int
+    private val systemCurrentVolume: Int
         get() = audioManager.getStreamVolume(nowAudioType)
 
     /**

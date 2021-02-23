@@ -2,9 +2,7 @@ package com.studio.owo.player.data.locally.utils
 
 import android.annotation.SuppressLint
 import android.content.ContentResolver
-import android.content.ContentUris
 import android.database.Cursor
-import android.media.MediaMetadataRetriever
 import android.net.Uri
 import android.provider.MediaStore
 import androidx.databinding.ObservableField
@@ -12,7 +10,7 @@ import com.tencent.mm.R
 import com.studio.owo.player.data.locally.Album
 import com.studio.owo.player.data.locally.Artist
 import com.studio.owo.player.data.locally.Song
-import com.tencent.mm.getContext
+import com.studio.owo.player.getContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -31,64 +29,12 @@ object MediaStoreProvider {
 
     private val albumArtUri: Uri = Uri.parse("content://media/external/audio/albumart")
 
-
-    fun getArt(song: Song): String? {
-        return if (!ignoreCacheAlbumArt) {
-            getArtCache(song.album.get()!!.id.get()!!)
-        } else {
-            /*val byteArray = getArt(song.file.get()!!)
-            if (byteArray != null) {
-                withContext(Dispatchers.IO) {
-                    val file = FileProvider.getArtCacheFile(song.id.toString())
-                    file.let {
-                        if (!file.exists()) {
-                            it.writeBytes(byteArray)
-                        }
-                        it.absolutePath
-                    }
-                }
-            } else {
-                UNKNOWN_ART
-            }*/
-            getRealFilePath(getArtCache(song))
-        }
-    }
-
-    //val UNKNOWN_ART_DRAWABLE = getContext().resources.getDrawable(UNKNOWN_ART_RES)
-    suspend fun getArtByteArray(song: Song): ByteArray? {
-        return withContext(Dispatchers.IO) {
-            if (!ignoreCacheAlbumArt) {
-
-                getRealFilePath(
-                    Uri.parse(
-                        getArtCache(song.album.get()!!.id.get()!!)
-                    )
-                ).let {
-                    return@withContext when (it) {
-                        null -> null
-                        else -> File(it).readBytes()
-                    }
-                }
-
-            } else {
-                return@withContext getArt(song.file.get()!!)
-            }
-        }
-    }
-
     fun getArtUri(song: Song): Uri {
         return getArtCache(song)
     }
 
     fun getArt(album: Album): String? {
         return getArtCache(album.id.get()!!)
-    }
-
-    private fun getArt(file: File): ByteArray? {
-        val mediaData = MediaMetadataRetriever()
-        if (!file.exists()) return null
-        mediaData.setDataSource(file.inputStream().fd)
-        return mediaData.embeddedPicture
     }
 
     private fun getArtCache(song: Song): Uri {
@@ -114,63 +60,7 @@ object MediaStoreProvider {
                 cur.close()
             }
         }
-        /*if (albumArt == null) {
-            albumArt = UNKNOWN_ART
-        }*/
         return albumArt
-    }
-
-
-    private fun getArtFromFile(songID: Int, albumID: Int): String {
-        require(!(albumID < 0 && songID < 0)) { "Must specify an album or a song id" }
-        return if (albumID < 0) {
-            getRealFilePath(
-                Uri.parse(
-                    "content://media/external/audio/media/$songID/albumart"
-                )
-            )
-        } else {
-            //Uri uri = ContentUris.withAppendedId(albumArtUri, albumid);
-            getRealFilePath(
-                ContentUris.withAppendedId(
-                    albumArtUri,
-                    albumID.toLong()
-                )
-            )
-        } ?: UNKNOWN_ART
-    }
-
-    private fun getRealFilePath(uri: Uri): String? {
-        val scheme = uri.scheme
-        var data: String? = null
-        when {
-            scheme == null -> {
-                data = uri.path
-            }
-            ContentResolver.SCHEME_FILE == scheme -> {
-                data = uri.path
-            }
-            ContentResolver.SCHEME_CONTENT == scheme -> {
-                val cursor: Cursor? =
-                    getContext()
-                        .contentResolver
-                        .query(
-                            uri,
-                            arrayOf(MediaStore.Images.ImageColumns.DATA),
-                            null, null, null
-                        )
-                if (cursor != null) {
-                    if (cursor.moveToFirst()) {
-                        val index = cursor.getColumnIndex(MediaStore.Images.ImageColumns.DATA)
-                        if (index > -1) {
-                            data = cursor.getString(index)
-                        }
-                    }
-                    cursor.close()
-                }
-            }
-        }
-        return data
     }
 
 

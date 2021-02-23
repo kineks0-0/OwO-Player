@@ -11,7 +11,7 @@ import android.view.ViewGroup
 import androidx.lifecycle.ViewModelProvider
 import com.tencent.mm.R
 import com.studio.owo.player.data.locally.utils.MediaStoreProvider
-import com.tencent.mm.getContext
+import com.studio.owo.player.getContext
 import com.studio.owo.player.ui.viewpage.adapter.AlbumItemRecyclerViewAdapter
 import com.studio.owo.player.ui.viewpage.model.MusicViewModel
 import kotlinx.coroutines.Dispatchers
@@ -23,8 +23,8 @@ import kotlin.concurrent.thread
 
 class AlbumFragment : Fragment(), OnPageSelectedChange {
 
-    private var columnCount = 2
-    private lateinit var viewModel: MusicViewModel
+    private var columnCount = 2                     //项目列数
+    private lateinit var viewModel: MusicViewModel  //这个Model用于复用RecyclerView的init和keyDown
 
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
@@ -58,7 +58,7 @@ class AlbumFragment : Fragment(), OnPageSelectedChange {
 
     override fun onStart() {
         super.onStart()
-
+        //延迟到 onStart 协程加载
         GlobalScope.launch(Dispatchers.Main) {
             with(view!! as RecyclerView) {
                 val albums = MediaStoreProvider.queryAlbum()
@@ -71,6 +71,7 @@ class AlbumFragment : Fragment(), OnPageSelectedChange {
         }
     }
 
+    //用于处理 RecyclerView 焦点位置（按键兼容）
     override fun onPageSelectedChange(hasFocus: Boolean, position: Int) {
         if (view is RecyclerView) {
             with((view as RecyclerView)) {

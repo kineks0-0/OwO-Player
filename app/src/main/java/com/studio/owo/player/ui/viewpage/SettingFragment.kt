@@ -9,7 +9,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import com.tencent.mm.R
-import com.tencent.mm.getContext
+import com.studio.owo.player.getContext
 import com.studio.owo.player.ui.viewpage.adapter.SettingItemRecyclerViewAdapter
 import com.studio.owo.player.ui.viewpage.dummy.DummyContent
 

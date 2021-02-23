@@ -8,7 +8,7 @@ import android.media.MediaScannerConnection
 import android.os.PowerManager
 import android.util.Log
 import com.studio.owo.player.data.locally.Song
-import com.tencent.mm.getContext
+import com.studio.owo.player.getContext
 
 
 object MusicPlay {
@@ -17,7 +17,7 @@ object MusicPlay {
 
     private var mediaPlayer = getNewMediaPlayer()
 
-    //private var song: _root_ide_package_.com.studio.owo.player.data.locally.Song = _root_ide_package_.com.studio.owo.player.data.locally.Song(File("404"),-1L,-1L,-1L,"",-1,"")
+    //private var song: _root_ide_package_.com.tencent.mm.data.locally.Song = _root_ide_package_.com.tencent.mm.data.locally.Song(File("404"),-1L,-1L,-1L,"",-1,"")
     private val mAudioManager: AudioManager by lazy {
         getContext().getSystemService(
             Context.AUDIO_SERVICE
@@ -284,9 +284,9 @@ object MusicPlay {
                 pausePlay()
             else {
                 continuesPlay()
-                /*if (!mediaPlayer.isPlaying)
+                if (!mediaPlayer.isPlaying)
                     if (playList.size != 0)
-                        playSong(0)*/
+                        playSong(0)
             }
         }
 
@@ -319,7 +319,7 @@ object MusicPlay {
 
             try {
                 val file = song.file.get()!!
-                mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC)
+                //mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC)
                 //mediaPlayer.setDataSource(file.inputStream().fd,0,file.length())
                 mediaPlayer.setDataSource(file.absolutePath)
 

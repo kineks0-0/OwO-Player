@@ -3,6 +3,8 @@ package com.studio.owo.player.ui.viewpage
 import android.annotation.SuppressLint
 import androidx.lifecycle.ViewModelProvider
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -26,12 +28,13 @@ import kotlin.concurrent.thread
 class PlayingFragment : Fragment(), OnPageSelectedChange {
 
     companion object {
-        private const val rdp = 10
-        fun newInstance() = PlayingFragment()
+        private const val rdp = 10              //图片圆角值
+        fun newInstance() = PlayingFragment()   //外部实例化
 
-        @BindingAdapter("android:song")
+        @BindingAdapter("android:song") //layout中dataBinding接口
         @JvmStatic
         fun setSongImage(imageView: ImageView, song: Song?) {
+            //仅View可见时加载
             if (imageView.visibility == View.VISIBLE) {
                 GlobalScope.launch(Dispatchers.Main) {
                     Glide.with(imageView.context)
@@ -43,10 +46,7 @@ class PlayingFragment : Fragment(), OnPageSelectedChange {
                                     return@let null//MediaStoreProvider.UNKNOWN_ART_RES
                             }
                         )
-                        .placeholder(imageView.drawable.let {
-                            it?.alpha = 180
-                            return@let it?:imageView.background
-                            })
+                        .placeholder(imageView.background)
                         .error(R.drawable.view_background)
                         .transform(CenterCrop(), RoundedCorners(rdp))
                         .into(imageView)
@@ -57,10 +57,9 @@ class PlayingFragment : Fragment(), OnPageSelectedChange {
     }
 
 
-    // This property is only valid between onCreateView and
-    private var _binding: PlayingFragmentBinding? = null // onDestroyView.
-    private val binding get() = _binding!!
+    private lateinit var binding: PlayingFragmentBinding
     private lateinit var viewModel: PlayingViewModel
+    // 设置播放监听,在onDestroyView时移除监听
     private val onPlayListener = MusicPlay.addOnPlayListener(object : MusicPlay.OnPlayListener {
 
         @SuppressLint("SetTextI18n")
@@ -79,12 +78,16 @@ class PlayingFragment : Fragment(), OnPageSelectedChange {
 
         @SuppressLint("SetTextI18n")
         override fun onViewRedraw() {
+            //仅 Fragment 可见时更新视图
+            if (!this@PlayingFragment.isVisible) return
             binding.playModel = viewModel
             onPlayButtonRedraw()
             PlayingViewModel.playingFragmentTitle.value = viewModel.song.get()?.name?.get()
         }
 
         fun onPlayButtonRedraw() {
+            //仅 Fragment 可见时更新视图
+            if (!this@PlayingFragment.isVisible) return
             //binding.playing = MusicPlay.isPlaying
             if (MusicPlay.isPlaying)
                 binding.playButton.setImageResource(R.drawable.ic_pause_black_48dp)
@@ -100,14 +103,16 @@ class PlayingFragment : Fragment(), OnPageSelectedChange {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = PlayingFragmentBinding.inflate(inflater, container, false)
+        binding = PlayingFragmentBinding.inflate(inflater, container, false)
+        binding.lifecycleOwner = this
         return binding.root
     }
 
+
     override fun onStart() {
         super.onStart()
-
-        binding.root.onFocusChangeListener = View.OnFocusChangeListener { v, hasFocus ->
+        //播放专辑图设置焦点效果(按键兼容)
+        binding.playingImageView.onFocusChangeListener = View.OnFocusChangeListener { v, hasFocus ->
             if (hasFocus) {
                 thread {
                     var loop = true
@@ -129,11 +134,6 @@ class PlayingFragment : Fragment(), OnPageSelectedChange {
                 v.alpha = 1f
             }
         }
-
-        binding.playingImageView.onFocusChangeListener = binding.root.onFocusChangeListener
-        //binding.nextPlayImageView.onFocusChangeListener = binding.root.onFocusChangeListener
-        //binding.nextPlayImageView2.onFocusChangeListener = binding.root.onFocusChangeListener
-
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
@@ -143,13 +143,20 @@ class PlayingFragment : Fragment(), OnPageSelectedChange {
 
     override fun onDestroyView() {
         super.onDestroyView()
-        _binding = null
+        //_binding = null
         MusicPlay.removePlayListener(onPlayListener)
     }
 
     override fun onPageSelectedChange(hasFocus: Boolean, position: Int) {
-        if (hasFocus) {
-            binding.playButton.requestFocus()
+        // post 来避免事件回调获取焦点时 view 尚未准备
+        Handler(Looper.getMainLooper()).post {
+            if (!this@PlayingFragment.isVisible) return@post
+            if (hasFocus) {
+                binding.playButton.requestFocus()
+                binding.playingImageView.isFocusable = true
+            } else {
+                binding.playingImageView.isFocusable = false
+            }
         }
     }
 

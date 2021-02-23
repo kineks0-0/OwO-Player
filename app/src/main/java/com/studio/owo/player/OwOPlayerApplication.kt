@@ -13,6 +13,7 @@ class OwOPlayerApplication : Application() {
     override fun onCreate() {
         super.onCreate()
         context = this
+        // 初始化通知渠道
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channelId = CHANNEL_SERVICE_IMPORTANCE;
             val channelName = "音乐通知";

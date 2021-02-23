@@ -7,6 +7,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
 import android.os.IBinder
+import android.util.Log
 import android.view.KeyEvent
 import android.view.View
 import androidx.databinding.ObservableField
@@ -19,7 +20,7 @@ import com.studio.owo.player.data.locally.utils.MusicPlay
 import com.studio.owo.player.data.locally.Song
 import com.studio.owo.player.data.locally.utils.AudioMngHelper
 import com.studio.owo.player.data.locally.utils.MusicPlay.playMode
-import com.tencent.mm.getContext
+import com.studio.owo.player.getContext
 import com.studio.owo.player.ui.MainActivity
 
 class PlayingViewModel : ViewModel() {
@@ -52,11 +53,8 @@ class PlayingViewModel : ViewModel() {
         }
 
         var lastCurrentItem = 0
-        val playingFragmentTitle: MutableLiveData<String> by lazy { MutableLiveData() }
+        val playingFragmentTitle: MutableLiveData<String> by lazy { MutableLiveData(getContext().resources.getString(R.string.app_name)) }
 
-        init {
-            playingFragmentTitle.value = getContext().resources.getString(R.string.app_name)
-        }
     }
 
 
@@ -125,16 +123,18 @@ class PlayingViewModel : ViewModel() {
         if (playService == null) {
             Intent(getContext(), PlayService::class.java).also { intent ->
                 activity.startService(intent)
-                activity.bindService(intent, connection, Context.BIND_AUTO_CREATE)
+                //activity.bindService(intent, connection, Context.BIND_AUTO_CREATE)
             }
         }
     }
 
     fun onDestroy(activity: Activity) {
-        playService?.let {
-            activity.unbindService(connection)
-            it.binder.onBindDestroy()
+        try {
+            playService?.binder?.onBindDestroy()
+        } catch (e: Exception) {
+            Log.e(this::javaClass.toString(),e.message,e)
         }
+
     }
 
     fun onKeyDown(keyCode: Int, event: KeyEvent?, activity: MainActivity): Boolean {

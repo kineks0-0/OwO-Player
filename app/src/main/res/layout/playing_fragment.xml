@@ -15,7 +15,7 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@drawable/white_ripple"
+        android:background="?android:attr/windowBackground"
         android:descendantFocusability="afterDescendants"
         tools:context="com.studio.owo.player.ui.viewpage.PlayingFragment">
 
@@ -63,9 +63,7 @@
             android:layout_height="0dp"
             android:layout_marginTop="16dp"
             android:background="@drawable/view_elevation"
-            android:clickable="true"
             android:contentDescription="@string/app_name"
-            android:focusable="true"
             android:onClick="@{playModel::switchPlayMode}"
             android:song="@{playModel.song}"
             app:layout_constraintDimensionRatio="H,1:1"
@@ -103,7 +101,7 @@
             android:id="@+id/songTitle2TextView"
             android:layout_width="wrap_content"
             android:layout_height="0dp"
-            android:layout_marginTop="16dp"
+            android:layout_marginTop="8dp"
             android:background="@drawable/view_background2"
             android:ellipsize="end"
             android:maxLength="25"

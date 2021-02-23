@@ -118,9 +118,7 @@ class PlayService : Service() {
                 PendingIntent.getActivity(this, 0, notificationIntent, 0)
             }
 
-        val notificationBuilder = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            NotificationCompat.Builder(this, CHANNEL_SERVICE_IMPORTANCE)
-        } else NotificationCompat.Builder(this)
+        val notificationBuilder = NotificationCompat.Builder(this, CHANNEL_SERVICE_IMPORTANCE)
 
         val notification: Notification = notificationBuilder
             .setContentTitle(
@@ -172,10 +170,6 @@ class PlayService : Service() {
             .build()
 
         startForeground(SERVICE_NOTIFICATION_ID, notification)
-        /*val notificationManager = getSystemService(
-            NOTIFICATION_SERVICE
-        ) as NotificationManager
-        notificationManager.notify(SERVICE_NOTIFICATION_ID, notification)*/
     }
 
     private fun getPendingIntent(

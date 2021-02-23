@@ -19,6 +19,7 @@
     <color name="playButtonRippled">#97240077</color>
 
     <color name="background">#00000000</color>
+    <color name="windowsBackground">#F3F3F3</color>
 
     <color name="colorPrimary">#5A35FF</color>
     <color name="colorPrimaryVariant">#5416DF</color>
