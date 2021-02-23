@@ -6,6 +6,9 @@
 
     <color name="ripple">#809A4CFF</color>
 
+    <color name="playButtonBackground">#976900FF</color>
+    <color name="playButtonRippled">#97340077</color>
+
     <color name="colorPrimary">@color/purple_200</color>
     <color name="colorPrimaryVariant">@color/purple_700</color>
     <color name="colorOnPrimary">@color/black</color>

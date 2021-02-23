@@ -13,8 +13,8 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.viewpager.widget.ViewPager
 import com.tencent.mm.R
 import com.tencent.mm.databinding.ActivityMainBinding
-import com.tencent.mm.ui.viewpage.*
-import com.tencent.mm.ui.viewpage.model.PlayingViewModel
+import com.studio.owo.player.ui.viewpage.*
+import com.studio.owo.player.ui.viewpage.model.PlayingViewModel
 import kotlin.concurrent.thread
 
 class MainActivity : AppCompatActivity() {

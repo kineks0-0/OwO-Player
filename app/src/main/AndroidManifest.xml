@@ -19,7 +19,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.OwOPlayer">
         <service
-            android:name=".data.service.PlayService"
+            android:name="com.studio.owo.player.data.service.PlayService"
             android:enabled="true"
             android:exported="false" />
 

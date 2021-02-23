@@ -15,6 +15,9 @@
     <color name="ripple">#1A393939</color>
     <color name="rippled">#1A000000</color>
 
+    <color name="playButtonBackground">#976900FF</color>
+    <color name="playButtonRippled">#97240077</color>
+
     <color name="background">#00000000</color>
 
     <color name="colorPrimary">#5A35FF</color>
