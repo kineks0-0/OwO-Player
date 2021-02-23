@@ -7,7 +7,7 @@
         android:layout_height="match_parent"
         android:descendantFocusability="afterDescendants"
         android:background="#10000000"
-        tools:context=".ui.MainActivity">
+        tools:context="com.studio.owo.player.ui.MainActivity">
 
         <com.google.android.material.bottomnavigation.BottomNavigationView
             android:id="@+id/nav_view"

@@ -19,16 +19,16 @@ import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.target.Target
-import com.tencent.mm.OwOPlayerApplication.Companion.REQUEST_NOTIFICATION_CODE_NEXT_PLAY
-import com.tencent.mm.OwOPlayerApplication.Companion.REQUEST_NOTIFICATION_CODE_PAUSE_PLAY
-import com.tencent.mm.OwOPlayerApplication.Companion.REQUEST_NOTIFICATION_CODE_PREVIOUS_PLAY
-import com.tencent.mm.OwOPlayerApplication.Companion.SERVICE_NOTIFICATION_ID
+import com.studio.owo.player.OwOPlayerApplication.Companion.REQUEST_NOTIFICATION_CODE_NEXT_PLAY
+import com.studio.owo.player.OwOPlayerApplication.Companion.REQUEST_NOTIFICATION_CODE_PAUSE_PLAY
+import com.studio.owo.player.OwOPlayerApplication.Companion.REQUEST_NOTIFICATION_CODE_PREVIOUS_PLAY
+import com.studio.owo.player.OwOPlayerApplication.Companion.SERVICE_NOTIFICATION_ID
 import com.tencent.mm.R
 import com.studio.owo.player.data.locally.Song
 import com.studio.owo.player.data.locally.utils.MediaStoreProvider
 import com.studio.owo.player.data.locally.utils.MusicPlay
-import com.tencent.mm.OwOPlayerApplication.Companion.CHANNEL_SERVICE_IMPORTANCE
-import com.tencent.mm.ui.MainActivity
+import com.studio.owo.player.OwOPlayerApplication.Companion.CHANNEL_SERVICE_IMPORTANCE
+import com.studio.owo.player.ui.MainActivity
 
 class PlayService : Service() {
 

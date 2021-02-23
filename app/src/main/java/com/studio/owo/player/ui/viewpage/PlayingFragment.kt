@@ -81,7 +81,7 @@ class PlayingFragment : Fragment(), OnPageSelectedChange {
         override fun onViewRedraw() {
             binding.playModel = viewModel
             onPlayButtonRedraw()
-            PlayingViewModel.playingFragmentTitle.value = viewModel.song.get()!!.name.get()!!
+            PlayingViewModel.playingFragmentTitle.value = viewModel.song.get()?.name?.get()
         }
 
         fun onPlayButtonRedraw() {

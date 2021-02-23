@@ -1,4 +1,4 @@
-package com.tencent.mm.ui
+package com.studio.owo.player.ui
 
 
 import android.graphics.Color

@@ -20,7 +20,7 @@ import com.studio.owo.player.data.locally.Song
 import com.studio.owo.player.data.locally.utils.AudioMngHelper
 import com.studio.owo.player.data.locally.utils.MusicPlay.playMode
 import com.tencent.mm.getContext
-import com.tencent.mm.ui.MainActivity
+import com.studio.owo.player.ui.MainActivity
 
 class PlayingViewModel : ViewModel() {
 

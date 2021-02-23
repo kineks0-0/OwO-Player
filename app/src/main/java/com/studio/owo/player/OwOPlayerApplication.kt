@@ -1,4 +1,4 @@
-package com.tencent.mm
+package com.studio.owo.player
 
 import android.annotation.SuppressLint
 import android.annotation.TargetApi
