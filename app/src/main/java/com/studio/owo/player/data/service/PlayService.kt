@@ -77,7 +77,9 @@ class PlayService : Service() {
     fun onPlay() {
         with(this@PlayService) {
             Glide.with(this).asBitmap().load(
-                MediaStoreProvider.getArtUri(playMode.getPlayingSong(0)!!)
+                playMode.getPlayingSong(0)?.let {
+                    MediaStoreProvider.getArtUri(it)
+                } ?: R.drawable.unknown
             ).addListener(object : RequestListener<Bitmap> {
                 override fun onLoadFailed(
                     e: GlideException?,
