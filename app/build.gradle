@@ -11,12 +11,10 @@ android {
     defaultConfig {
         applicationId "com.tencent.mm"
         minSdkVersion 16
+        //noinspection ExpiredTargetSdkVersion
         targetSdkVersion 26
         versionCode 1
         versionName "Alpha 0.0.1"
-
-        resConfigs "en"
-
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
