@@ -9,6 +9,7 @@ import androidx.lifecycle.ViewModel
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.google.android.material.snackbar.Snackbar
+import com.studio.owo.player.data.locally.Album
 import com.studio.owo.player.data.locally.Song
 import com.studio.owo.player.data.locally.utils.MusicPlay
 import com.studio.owo.player.ui.viewpage.adapter.BaseRecyclerViewAdapter
@@ -17,10 +18,11 @@ import kotlin.concurrent.thread
 
 class MusicViewModel : ViewModel() {
 
-    val onClick: (position: Int, view: View, data: Song) -> Unit =
-        { position, view, data ->
+    val onClick: (position: Int, view: View, data: Song,list: ArrayList<Song>) -> Unit =
+        { position, view, data, list ->
             Snackbar.make(view, position.toString(), Snackbar.LENGTH_SHORT).show()
-            MusicPlay.playMode.playSong(data)
+            MusicPlay.playMode.update(list,data)
+            MusicPlay.playMode.play(data)
         }
 
     fun getOnKeyListener(

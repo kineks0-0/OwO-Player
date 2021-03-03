@@ -9,6 +9,7 @@ import android.os.Bundle
 import android.util.Log
 import android.view.KeyEvent
 import android.view.View
+import android.view.WindowManager
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -18,12 +19,15 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.viewpager.widget.ViewPager
 import com.google.android.material.snackbar.Snackbar
 import com.studio.owo.player.OwOPlayerApplication
-import com.tencent.mm.R
-import com.tencent.mm.databinding.ActivityMainBinding
+import com.studio.owo.player.getContext
+import com.studio.owo.player.ui.MainActivity.BackHandlerHelper.handleBackPress
+import com.studio.owo.player.ui.MainActivity.BackHandlerHelper.isFragmentBackHandled
 import com.studio.owo.player.ui.viewpage.*
 import com.studio.owo.player.ui.viewpage.model.PlayingViewModel
-import com.studio.owo.player.getContext
+import com.tencent.mm.R
+import com.tencent.mm.databinding.ActivityMainBinding
 import kotlin.concurrent.thread
+
 
 class MainActivity : AppCompatActivity() {
 
@@ -44,6 +48,11 @@ class MainActivity : AppCompatActivity() {
         // init Binding
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        window.setFlags(
+            WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED,
+            WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED
+        )
 
         // init ViewModel
         playingViewModel = ViewModelProvider(this).get(PlayingViewModel::class.java)
@@ -96,15 +105,7 @@ class MainActivity : AppCompatActivity() {
         binding.viewPage.offscreenPageLimit = 4
         onPageChangeCallback.onPageSelected(binding.viewPage.currentItem)
 
-        // 播放界面的标题设置 liveData
-        val playingFragmentTitleObserve = Observer<String> { newTitle ->
-            //Log.d(this::class.java.toString(),"Title update")
-            if (binding.viewPage.currentItem == 2) {
-               title = newTitle
-            }
-        }
 
-        PlayingViewModel.playingFragmentTitle.observe(this, playingFragmentTitleObserve)
 
     }
 
@@ -147,18 +148,26 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         // 判断是否需要运行时申请权限
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE
+            ) != PackageManager.PERMISSION_GRANTED) {
             // 判断是否需要对用户进行提醒，用户点击过拒绝&&没有勾选不再提醒时进行提示
-            if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+            if (ActivityCompat.shouldShowRequestPermissionRationale(
+                    this,
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE
+                )) {
                 // 给用于予以权限解释, 对于已经拒绝过的情况，先提示申请理由，再进行申请
-                Snackbar.make(binding.root,"程序需要读写权限来读取缓存和导出歌曲", Snackbar.LENGTH_SHORT).show()
-                requestPermissions(arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
+                Snackbar.make(binding.root, "程序需要读写权限来读取缓存和导出歌曲", Snackbar.LENGTH_SHORT).show()
+                requestPermissions(
+                    arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
                     OwOPlayerApplication.REQUEST_PERMISSION_CODE_WRITE_EXTERNAL_STORAGE
                 )
             } else {
                 // 无需说明理由的情况下，直接进行申请。如第一次使用该功能（第一次申请权限），用户拒绝权限并勾选了不再提醒
                 // 将引导跳转设置操作放在请求结果回调中处理
-                requestPermissions(arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
+                requestPermissions(
+                    arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
                     OwOPlayerApplication.REQUEST_PERMISSION_CODE_WRITE_EXTERNAL_STORAGE
                 )
             }
@@ -177,10 +186,13 @@ class MainActivity : AppCompatActivity() {
                     // TODO: 刷新数据
                 } else {
                     // 未同意的情况
-                    if (ActivityCompat.shouldShowRequestPermissionRationale(this,
-                            Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+                    if (ActivityCompat.shouldShowRequestPermissionRationale(
+                            this,
+                            Manifest.permission.WRITE_EXTERNAL_STORAGE
+                        )
+                    ) {
                         // 给用于予以权限解释, 对于已经拒绝过的情况，先提示申请理由，再进行申请
-                        Snackbar.make(binding.root,"程序需要读写权限播放歌曲",Snackbar.LENGTH_SHORT).show()
+                        Snackbar.make(binding.root, "程序需要读写权限播放歌曲", Snackbar.LENGTH_SHORT).show()
                     }
                 }
             }
@@ -193,41 +205,103 @@ class MainActivity : AppCompatActivity() {
         playingViewModel.onDestroy(this)
     }
 
-    override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean = playingViewModel.onKeyDown(keyCode,event,this)
+    override fun onBackPressed() {
+        if (!isFragmentBackHandled(pagerAdapter.getItem(binding.viewPage.currentItem))) {
+            super.onBackPressed()
+            //finish()
+        }
+    }
+
+    override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean = playingViewModel.onKeyDown(
+        keyCode,
+        event,
+        this
+    )
 
 
 
     // Since this is an object collection, use a FragmentStatePagerAdapter,
     // and NOT a FragmentPagerAdapter.
-    inner class PagerAdapter(fm: FragmentManager) : FragmentStatePagerAdapter(fm,BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT) {
+    inner class PagerAdapter(fm: FragmentManager) : FragmentStatePagerAdapter(
+        fm,
+        BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT
+    ) {
 
         private val musicFragment: MusicFragment = MusicFragment.newInstance(1)
         private val albumFragment: AlbumFragment = AlbumFragment.newInstance(2)
         private val playingFragment: PlayingFragment = PlayingFragment.newInstance()
-        private val settingFragment: SettingFragment = SettingFragment.newInstance(1)
+        private val settingFragment: SettingsFragment = SettingsFragment()
+        val fragments: ArrayList<Fragment> = ArrayList()
 
-        override fun getCount(): Int = 4
+        init {
+            fragments.add(musicFragment)
+            fragments.add(albumFragment)
+            fragments.add(playingFragment)
+            fragments.add(settingFragment)
 
-        override fun getItem(i: Int): Fragment {
-            return when (i) {
-                0 -> musicFragment
-                1 -> albumFragment
-                2 -> playingFragment
-                3 -> settingFragment
-                else -> Fragment()
+            // 播放界面的标题设置 liveData
+            albumFragment.title
+                .observe(this@MainActivity, { newTitle -> setTitle(newTitle,1)})
+            // 播放界面的标题设置 liveData
+            playingFragment.title
+                .observe(this@MainActivity, { newTitle -> setTitle(newTitle,2)})
+        }
+
+        fun setTitle(newTitle: String, index: Int) {
+            if (binding.viewPage.currentItem == index) {
+                title = newTitle
             }
         }
 
+        override fun getCount(): Int = fragments.size
+
+        override fun getItem(i: Int): Fragment {
+            return fragments[i]
+        }
+
         override fun getPageTitle(position: Int): String {
-            return when (position) {
-                0 -> MusicFragment.title
-                1 -> AlbumFragment.title
-                2 -> PlayingViewModel.playingFragmentTitle.value
-                3 -> SettingFragment.title
-                else -> "OBJECT ${(position + 1)}"
+            return when (fragments[position]) {
+                musicFragment -> MusicFragment.title
+                albumFragment -> albumFragment.title.value
+                playingFragment -> playingFragment.title.value
+                settingFragment -> SettingsFragment.title
+                else -> null
             } ?: getString(R.string.app_name)
         }
 
+    }
+
+    object BackHandlerHelper {
+        /**
+         * 将back事件分发给 FragmentManager 中管理的子Fragment，如果该 FragmentManager 中的所有Fragment都
+         * 没有处理back事件，则尝试 FragmentManager.popBackStack()
+         *
+         * @return 如果处理了back键则返回 **true**
+         * @see .handleBackPress
+         * @see .handleBackPress
+         */
+        fun handleBackPress(fragmentManager: MainActivity.PagerAdapter): Boolean {
+            val fragments: List<Fragment> = fragmentManager.fragments
+            for (i in fragments.indices.reversed()) {
+                val child: Fragment = fragments[i]
+                if (isFragmentBackHandled(child)) {
+                    return true
+                }
+            }
+            return false
+        }
+
+        /**
+         * 判断Fragment是否处理了Back键
+         *
+         * @return 如果处理了back键则返回 **true**
+         */
+        fun isFragmentBackHandled(fragment: Fragment?): Boolean {
+            return (fragment != null && fragment.isVisible
+                    //&& fragment.getUserVisibleHint() //for ViewPager
+                    && fragment is FragmentBackHandler
+                    && (fragment as FragmentBackHandler).onBackPressed())
+        }
     }
 
 }

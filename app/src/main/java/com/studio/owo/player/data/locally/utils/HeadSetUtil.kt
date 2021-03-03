@@ -13,7 +13,9 @@ import android.util.Log
 import android.view.KeyEvent
 import java.util.*
 
-
+/*
+*
+* */
 object HeadSetUtil {
 
     private var headSetListener: OnHeadSetListener? = null

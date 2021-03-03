@@ -1,0 +1,47 @@
+<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <PreferenceCategory app:title="@string/music_header">
+
+        <SwitchPreferenceCompat
+            app:key="ignoreCacheAlbumArt"
+            app:title="@string/ignoreCacheAlbumArt" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory app:title="@string/app_header">
+
+        <SwitchPreferenceCompat
+            app:key="load_album_art"
+            app:title="@string/load_album_art_title"
+            app:defaultValue="true"
+            app:summaryOff="@string/load_album_art_summary_off"
+            app:summaryOn="@string/load_album_art_summary_on"/>
+
+        <Preference
+            app:key="update_media_store"
+            app:title="@string/update_media_store_title"
+            app:summary="@string/update_media_store_summary"/>
+
+        <Preference
+            app:key="clear_cache"
+            app:title="@string/clear_cache_title"
+            app:summary="@string/clear_cache_summary"/>
+
+    </PreferenceCategory>
+
+    <PreferenceCategory app:title="@string/sync_header">
+
+        <SwitchPreferenceCompat
+            app:key="sync"
+            app:title="@string/sync_title" />
+
+        <SwitchPreferenceCompat
+            app:dependency="sync"
+            app:key="attachment"
+            app:summaryOff="@string/attachment_summary_off"
+            app:summaryOn="@string/attachment_summary_on"
+            app:title="@string/attachment_title" />
+
+    </PreferenceCategory>
+
+</PreferenceScreen>

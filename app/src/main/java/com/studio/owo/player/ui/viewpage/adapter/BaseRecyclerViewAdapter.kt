@@ -5,12 +5,12 @@ import android.view.ViewGroup
 import androidx.databinding.ViewDataBinding
 import androidx.recyclerview.widget.RecyclerView
 
-abstract class BaseRecyclerViewAdapter<B : ViewDataBinding, D>(val list: List<D>) :
+abstract class BaseRecyclerViewAdapter<B : ViewDataBinding, D>(internal var list: ArrayList<D>) :
     RecyclerView.Adapter<BaseRecyclerViewAdapter<B, D>.ViewHolder>(),
     Comparable<BaseRecyclerViewAdapter<B, D>> {
 
 
-    var onClickListener: (position: Int, view: View, data: D) -> Unit = { _, _, _ -> }
+    var onClickListener: (position: Int, view: View, data: D,list: ArrayList<D>) -> Unit = { _, _, _,_ -> }
     var onKeyListener = View.OnKeyListener { _, _, _ -> false }
     fun father() : BaseRecyclerViewAdapter<ViewDataBinding,Any> = this as BaseRecyclerViewAdapter<ViewDataBinding,Any>
 
@@ -25,7 +25,7 @@ abstract class BaseRecyclerViewAdapter<B : ViewDataBinding, D>(val list: List<D>
             }
         }
         clickLayout(binding).setOnClickListener {
-            onClickListener(holder.adapterPosition, holder.itemView , list[holder.adapterPosition])
+            onClickListener(holder.adapterPosition, holder.itemView , list[holder.adapterPosition],list)
         }
         clickLayout(binding).setOnKeyListener { _, keyCode, event ->
             onKeyListener.onKey(holder.itemView, keyCode, event)
@@ -47,4 +47,9 @@ abstract class BaseRecyclerViewAdapter<B : ViewDataBinding, D>(val list: List<D>
     override fun getItemCount(): Int = list.size
     inner class ViewHolder(val binding: B) : RecyclerView.ViewHolder(binding.root)
     override fun compareTo(other: BaseRecyclerViewAdapter<B, D>): Int = 0
+
+    fun update(list: ArrayList<D>) {
+        this.list = list
+        notifyDataSetChanged()
+    }
 }

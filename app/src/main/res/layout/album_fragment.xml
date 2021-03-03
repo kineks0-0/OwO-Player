@@ -1,13 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.recyclerview.widget.RecyclerView xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:name="com.tencent.mm.ui.viewpage.AlbumFragment"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:descendantFocusability="afterDescendants"
-    android:paddingLeft="16dp"
-    android:paddingRight="16dp"
-    app:layoutManager="LinearLayoutManager"
-    tools:context="com.studio.owo.player.ui.viewpage.AlbumFragment"
-    tools:listitem="@layout/album_item_fragment" />
+    android:layout_height="match_parent">
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:name="com.studio.owo.player.ui.viewpage.AlbumFragment"
+        android:id="@+id/albumFragment"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:paddingLeft="16dp"
+        android:paddingRight="16dp"
+        android:descendantFocusability="afterDescendants"
+        app:layoutManager="LinearLayoutManager"
+        tools:context="com.studio.owo.player.ui.viewpage.AlbumFragment"
+        tools:listitem="@layout/album_item_fragment" />
+
+    <androidx.fragment.app.FragmentContainerView
+        android:id="@+id/musicFragmentList"
+        android:name="com.studio.owo.player.ui.viewpage.MusicFragment"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/windowsBackground"
+        android:visibility="invisible"
+        android:tag="MusicFragmentInAlbumFragment"
+        tools:layout="@layout/music_fragment"/>
+
+</FrameLayout>

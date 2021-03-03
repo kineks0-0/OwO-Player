@@ -3,6 +3,7 @@ package com.studio.owo.player.data.locally.utils
 
 import android.content.Context
 import android.media.AudioManager
+import android.os.Build
 import androidx.annotation.IntDef
 import com.studio.owo.player.getContext
 import kotlin.math.ceil
@@ -23,7 +24,8 @@ import kotlin.math.floor
 class AudioMngHelper(context: Context) {
     //private val TAG = "AudioMngHelper"
     //private val OpenLog = true
-    private val audioManager: AudioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+    private val audioManager: AudioManager =
+        context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
     private var nowAudioType = TYPE_MUSIC
     private var nowFlag = FLAG_NOTHING
     private var voiceStep100 = 2 //0-100的步进。
@@ -114,6 +116,64 @@ class AudioMngHelper(context: Context) {
         a = if (a >= 100) 100 else a
         audioManager.setStreamVolume(nowAudioType, a, nowFlag)
         return get100CurrentVolume()
+    }
+
+
+    /**
+     * 设置音频静音(修改插入函数)
+     * 切换静音状态
+     * @return 修改后是否静音
+     */
+    fun setAudioMute(): Boolean {
+        val muteFlag =
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
+                audioManager.isStreamMute(AudioManager.STREAM_MUSIC)
+            // 获取当前音频是否静音
+            else
+                get100CurrentVolume() == 0
+        // Api 23 之前 android 没有提供公开 api 获取静音状态
+        // 这里判断音量是否为 0 (本来想用麦克风那个api,但avd始终返回 false)
+
+        return setAudioMute(muteFlag)
+    }
+
+    /**
+     * 设置音频静音(修改插入函数)
+     * boolean 指定静音状态
+     * @return 修改后是否静音
+     */
+    fun setAudioMute(muteFlag: Boolean): Boolean {
+        if (muteFlag) {
+            // 取消静音
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
+                audioManager.adjustStreamVolume(
+                    nowAudioType,
+                    AudioManager.ADJUST_UNMUTE,
+                    nowFlag
+                )
+            else
+                audioManager.setStreamMute(
+                    nowAudioType,
+                    false
+                )
+
+        } else {
+
+            // 设为静音
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
+                audioManager.adjustStreamVolume(
+                    nowAudioType,
+                    AudioManager.ADJUST_MUTE,
+                    nowFlag
+                )
+            else
+                audioManager.setStreamMute(
+                    nowAudioType,
+                    true
+                )
+
+        }
+        return !muteFlag
     }
 
     /**

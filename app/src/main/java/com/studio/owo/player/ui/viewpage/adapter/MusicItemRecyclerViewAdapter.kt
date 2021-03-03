@@ -8,16 +8,16 @@ import androidx.databinding.BindingAdapter
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.bitmap.CenterCrop
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners
-import com.tencent.mm.R
 import com.studio.owo.player.data.locally.utils.MediaStoreProvider
 import com.studio.owo.player.data.locally.Song
+import com.studio.owo.player.data.locally.utils.MediaStoreProvider.UNKNOWN_ART_RES
 import com.tencent.mm.databinding.MusicItemFragmentBinding
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 
 
-class MusicItemRecyclerViewAdapter(songs: List<Song>) :
+class MusicItemRecyclerViewAdapter(songs: ArrayList<Song>) :
     BaseRecyclerViewAdapter<MusicItemFragmentBinding, Song>(songs) {
 
 
@@ -37,14 +37,19 @@ class MusicItemRecyclerViewAdapter(songs: List<Song>) :
         @BindingAdapter("android:music")
         @JvmStatic
         fun setSongImage(imageView: ImageView, song: Song) {
-            GlobalScope.launch(Dispatchers.Main) {
-                Glide.with(imageView.context)
-                    .load(MediaStoreProvider.getArtUri(song))
-                    .placeholder(R.drawable.unknown)
-                    .error(R.drawable.unknown)
-                    .transform(CenterCrop(), RoundedCorners(4))
-                    .into(imageView)
+
+            // 仅 View 可见 和 LoadArt 为真时加载
+            if (imageView.visibility == View.VISIBLE && MediaStoreProvider.loadAlbumArt) {
+                GlobalScope.launch(Dispatchers.Main) {
+                    Glide.with(imageView.context)
+                        .load(MediaStoreProvider.getArtUri(song))
+                        .placeholder(UNKNOWN_ART_RES)
+                        .error(UNKNOWN_ART_RES)
+                        .transform(CenterCrop(), RoundedCorners(4))
+                        .into(imageView)
+                }
             }
+
         }
     }
 

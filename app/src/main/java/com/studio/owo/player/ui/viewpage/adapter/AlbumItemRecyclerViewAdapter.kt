@@ -14,7 +14,7 @@ import com.tencent.mm.databinding.AlbumItemFragmentBinding
 
 
 class AlbumItemRecyclerViewAdapter(
-    private val albums: List<Album>
+    private val albums: ArrayList<Album>
 ) : BaseRecyclerViewAdapter<AlbumItemFragmentBinding, Album>(albums) {
 
 
@@ -31,12 +31,15 @@ class AlbumItemRecyclerViewAdapter(
         @BindingAdapter("android:album")
         @JvmStatic
         fun setAlbumImage(imageView: ImageView, album: Album) {
-            Glide.with(imageView.context)
-                .load(MediaStoreProvider.getArt(album))
-                .placeholder(R.drawable.unknown)
-                .error(R.drawable.unknown)
-                .transform(CenterCrop())
-                .into(imageView)
+            // 仅 View 可见 和 LoadArt 为真时加载
+            if (imageView.visibility == View.VISIBLE && MediaStoreProvider.loadAlbumArt) {
+                Glide.with(imageView.context)
+                    .load(MediaStoreProvider.getArt(album))
+                    .placeholder(R.drawable.ic_launcher_background)
+                    .error(R.drawable.ic_launcher_background)
+                    .transform(CenterCrop())
+                    .into(imageView)
+            }
         }
     }
 

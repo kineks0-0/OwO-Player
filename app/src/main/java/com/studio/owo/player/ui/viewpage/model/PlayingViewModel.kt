@@ -3,7 +3,6 @@ package com.studio.owo.player.ui.viewpage.model
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.ComponentName
-import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
 import android.os.IBinder
@@ -27,7 +26,7 @@ class PlayingViewModel : ViewModel() {
 
 
     companion object {
-        //private val playMode = MusicPlay.playMode
+
         private val audioMngHelper = AudioMngHelper.newInstance()
 
         @SuppressLint("StaticFieldLeak")
@@ -53,7 +52,6 @@ class PlayingViewModel : ViewModel() {
         }
 
         var lastCurrentItem = 0
-        val playingFragmentTitle: MutableLiveData<String> by lazy { MutableLiveData(getContext().resources.getString(R.string.app_name)) }
 
     }
 
@@ -68,7 +66,7 @@ class PlayingViewModel : ViewModel() {
         get() {
             field.set(
                 playMode.getSong(
-                    playMode.getNextSong(false, 0)
+                    playMode.getNextIndex(false, 0)
                 )
             )
             return field
@@ -78,7 +76,7 @@ class PlayingViewModel : ViewModel() {
         get() {
             field.set(
                 playMode.getSong(
-                    playMode.getNextSong(false, 1)
+                    playMode.getNextIndex(false, 1)
                 )
             )
             return field
@@ -99,31 +97,41 @@ class PlayingViewModel : ViewModel() {
     }
 
 
-    fun preSong(view: View) = playMode.previousSong(true, 0)
+    // for DataBinding
+    fun preSong(view: View) = playMode.previous(true, 0)
     fun playSong(view: View) = playMode.play()
-    fun nextSong(view: View) = playMode.nextSong(true, 0)
+    fun nextSong(view: View) = playMode.next(true, 0)
     fun switchPlayMode(view: View) = playMode.switchPlayMode()
-    fun nextSong(offset: Int): Boolean = playMode.getNextSong(false, offset) != -1
+    fun nextSong(offset: Int): Boolean = playMode.getNextIndex(false, offset) != -1
 
     fun volumeUp(view: View) {
         audioMngHelper.addVoice100()
-        Snackbar.make(view,audioMngHelper.get100CurrentVolume().toString() + "%",Snackbar.LENGTH_SHORT).show()
+        Snackbar.make(
+            view,
+            audioMngHelper.get100CurrentVolume().toString() + "%",
+            Snackbar.LENGTH_SHORT
+        ).show()
     }
 
     fun volumeDown(view: View) {
         audioMngHelper.subVoice100()
-        Snackbar.make(view,audioMngHelper.get100CurrentVolume().toString() + "%",Snackbar.LENGTH_SHORT).show()
+        Snackbar.make(
+            view,
+            audioMngHelper.get100CurrentVolume().toString() + "%",
+            Snackbar.LENGTH_SHORT
+        ).show()
     }
 
+
+    // for MainActivity
     fun onCreate(activity: Activity) {
 
     }
 
     fun onStart(activity: Activity) {
-        if (playService == null) {
+        if (playService == null && mBound) {
             Intent(getContext(), PlayService::class.java).also { intent ->
                 activity.startService(intent)
-                //activity.bindService(intent, connection, Context.BIND_AUTO_CREATE)
             }
         }
     }
@@ -132,15 +140,17 @@ class PlayingViewModel : ViewModel() {
         try {
             playService?.binder?.onBindDestroy()
         } catch (e: Exception) {
-            Log.e(this::javaClass.toString(),e.message,e)
+            Log.e(this::javaClass.toString(), e.message, e)
         }
-
     }
 
     fun onKeyDown(keyCode: Int, event: KeyEvent?, activity: MainActivity): Boolean {
         return with(activity) {
             when (keyCode) {
+
                 KeyEvent.KEYCODE_DPAD_LEFT -> {
+                    // 无限循环页面
+                    // 如果已经是 ViewPager 的第一页则跳转最后一页
                     if (binding.viewPage.currentItem == 0) {
                         binding.viewPage.currentItem = pagerAdapter.count - 1
                         true
@@ -148,7 +158,10 @@ class PlayingViewModel : ViewModel() {
                         false
                     }
                 }
+
                 KeyEvent.KEYCODE_DPAD_RIGHT -> {
+                    // 无限循环页面
+                    // 如果已经是 ViewPager 的最后一页则跳转第一页
                     if (binding.viewPage.currentItem == pagerAdapter.count - 1) {
                         binding.viewPage.currentItem = 0
                         true
@@ -156,33 +169,54 @@ class PlayingViewModel : ViewModel() {
                         false
                     }
                 }
-                KeyEvent.KEYCODE_0 -> {
-                    false
+
+                KeyEvent.KEYCODE_0 -> false //这里由 RecyclerView 消费
+
+
+                KeyEvent.KEYCODE_1 -> {     //静音
+                    when (audioMngHelper.setAudioMute()) {
+                        true -> Snackbar.make(
+                            activity.binding.root,
+                            R.string.now_mute, Snackbar.LENGTH_SHORT
+                        ).show()
+                        false -> Snackbar.make(
+                            activity.binding.root,
+                            R.string.now_unmute, Snackbar.LENGTH_SHORT
+                        ).show()
+                    }
+                    true
                 }
-                KeyEvent.KEYCODE_1 -> {
-                    false
-                }
-                KeyEvent.KEYCODE_2 -> {
+
+                KeyEvent.KEYCODE_2 -> {     //音量+
                     audioMngHelper.addVoice100()
-                    Snackbar.make(activity.binding.root,audioMngHelper.get100CurrentVolume().toString() + "%",Snackbar.LENGTH_SHORT).show()
+                    Snackbar.make(
+                        activity.binding.root,
+                        getString(R.string.now_voice100, audioMngHelper.get100CurrentVolume()),
+                        Snackbar.LENGTH_SHORT
+                    ).show()
                     true
                 }
-                KeyEvent.KEYCODE_3 -> {
-                    false
-                }
-                KeyEvent.KEYCODE_4 -> {
-                    playMode.previousSong(true, 0)
+
+                KeyEvent.KEYCODE_3 -> false     //这里由 RecyclerView 消费
+
+                KeyEvent.KEYCODE_4 -> {     //上一首
+                    playMode.previous(true, 0)
                     true
                 }
-                KeyEvent.KEYCODE_5 -> {
+
+                KeyEvent.KEYCODE_5 -> {     //播放暂停
                     playMode.play()
                     true
                 }
-                KeyEvent.KEYCODE_6 -> {
-                    playMode.nextSong()
+
+                KeyEvent.KEYCODE_6 -> {     //下一首
+                    playMode.next()
                     true
                 }
-                KeyEvent.KEYCODE_7 -> {
+
+                KeyEvent.KEYCODE_7 -> {     //跳转播放页
+                    //如果不在播放页则跳转到播放页
+                    //否则跳转回之前的页面 lastCurrentItem
                     if (activity.binding.viewPage.currentItem != 2) {
                         lastCurrentItem = activity.binding.viewPage.currentItem
                         activity.binding.viewPage.currentItem = 2
@@ -191,16 +225,21 @@ class PlayingViewModel : ViewModel() {
                     }
                     true
                 }
-                KeyEvent.KEYCODE_8 -> {
+
+                KeyEvent.KEYCODE_8 -> {     //音量-
                     audioMngHelper.subVoice100()
-                    Snackbar.make(activity.binding.root,audioMngHelper.get100CurrentVolume().toString() + "%",Snackbar.LENGTH_SHORT).show()
+                    Snackbar.make(
+                        activity.binding.root,
+                        getString(R.string.now_voice100, audioMngHelper.get100CurrentVolume()),
+                        Snackbar.LENGTH_SHORT
+                    ).show()
                     true
                 }
-                KeyEvent.KEYCODE_9 -> {
-                    false
-                }
-                KeyEvent.KEYCODE_BACK -> {
-                    activity.finish()
+
+                KeyEvent.KEYCODE_9 -> false //这里由 RecyclerView 消费
+
+                KeyEvent.KEYCODE_BACK -> {      //直接销毁
+                    activity.onBackPressed()
                     true
                 }
 

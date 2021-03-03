@@ -9,6 +9,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.lifecycle.ViewModelProvider
+import com.studio.owo.player.data.locally.Song
 import com.tencent.mm.R
 import com.studio.owo.player.data.locally.utils.MediaStoreProvider
 import com.studio.owo.player.data.locally.utils.MusicPlay
@@ -22,10 +23,54 @@ import java.lang.Thread.sleep
 import kotlin.concurrent.thread
 
 
-class MusicFragment : Fragment(), OnPageSelectedChange {
+class MusicFragment() : Fragment(), OnPageSelectedChange {
 
+
+    constructor(playList: ArrayList<Song>) : this() {
+        this.playList = { playList }
+    }
+
+    companion object {
+
+        const val ARG_COLUMN_COUNT = "column-count"
+        var title = getContext().resources.getString(R.string.title_home)
+
+        @JvmStatic
+        fun newInstance(columnCount: Int = 1) =
+            MusicFragment().apply {
+                arguments = Bundle().apply {
+                    putInt(ARG_COLUMN_COUNT, columnCount)
+                }
+            }
+
+        @JvmStatic
+        fun newInstance(playList: ArrayList<Song>, columnCount: Int = 1) =
+            MusicFragment(playList).apply {
+                arguments = Bundle().apply {
+                    putInt(ARG_COLUMN_COUNT, columnCount)
+                }
+            }//外部实例化
+    }
+
+
+
+
+    var playList: suspend () -> ArrayList<Song> = {
+        MediaStoreProvider.querySongs()
+    }
+    set(value) {
+        if (view is RecyclerView) {
+            GlobalScope.launch(Dispatchers.Main) {
+                ((view as RecyclerView).adapter as MusicItemRecyclerViewAdapter).update(value.invoke())
+            }
+        }
+        field = value
+    }
     private var columnCount = 1                     //项目列数
     private lateinit var viewModel: MusicViewModel  //这个Model用于复用RecyclerView的init和keyDown
+
+
+
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
@@ -73,8 +118,8 @@ class MusicFragment : Fragment(), OnPageSelectedChange {
         super.onStart()
         //延迟到 onStart 协程加载
         GlobalScope.launch(Dispatchers.Main) {
-            with(view!! as RecyclerView) {
-                val songs = MediaStoreProvider.querySongs()
+            with(requireView() as RecyclerView) {
+                val songs = playList.invoke()
                 MusicItemRecyclerViewAdapter(songs).let {
                     adapter = it
                     it.onClickListener = viewModel.onClick
@@ -116,19 +161,5 @@ class MusicFragment : Fragment(), OnPageSelectedChange {
 
     }
 
-
-    companion object {
-
-        const val ARG_COLUMN_COUNT = "column-count"
-        var title = getContext().resources.getString(R.string.app_name)
-
-        @JvmStatic
-        fun newInstance(columnCount: Int) =
-            MusicFragment().apply {
-                arguments = Bundle().apply {
-                    putInt(ARG_COLUMN_COUNT, columnCount)
-                }
-            }
-    }
 
 }

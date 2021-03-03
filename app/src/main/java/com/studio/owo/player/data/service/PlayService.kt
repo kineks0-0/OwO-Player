@@ -9,7 +9,6 @@ import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.os.Binder
-import android.os.Build
 import android.os.IBinder
 import android.support.v4.media.session.MediaSessionCompat
 import android.util.Log
@@ -28,6 +27,7 @@ import com.studio.owo.player.data.locally.Song
 import com.studio.owo.player.data.locally.utils.MediaStoreProvider
 import com.studio.owo.player.data.locally.utils.MusicPlay
 import com.studio.owo.player.OwOPlayerApplication.Companion.CHANNEL_SERVICE_IMPORTANCE
+import com.studio.owo.player.data.locally.utils.MediaStoreProvider.UNKNOWN_ART_RES
 import com.studio.owo.player.ui.MainActivity
 
 class PlayService : Service() {
@@ -50,16 +50,12 @@ class PlayService : Service() {
 
     })
 
-    override fun onCreate() {
-        super.onCreate()
-    }
-
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         intent?.let {
             when (it.getIntExtra("requestCode", -1)) {
-                REQUEST_NOTIFICATION_CODE_PREVIOUS_PLAY -> MusicPlay.playMode.previousSong()
+                REQUEST_NOTIFICATION_CODE_PREVIOUS_PLAY -> MusicPlay.playMode.previous()
                 REQUEST_NOTIFICATION_CODE_PAUSE_PLAY -> MusicPlay.playMode.play()
-                REQUEST_NOTIFICATION_CODE_NEXT_PLAY -> MusicPlay.playMode.nextSong()
+                REQUEST_NOTIFICATION_CODE_NEXT_PLAY -> MusicPlay.playMode.next()
             }
         }
         return START_STICKY.takeIf { MusicPlay.isPlaying } ?: START_NOT_STICKY
@@ -79,7 +75,7 @@ class PlayService : Service() {
             Glide.with(this).asBitmap().load(
                 playMode.getPlayingSong(0)?.let {
                     MediaStoreProvider.getArtUri(it)
-                } ?: R.drawable.unknown
+                } ?: UNKNOWN_ART_RES
             ).addListener(object : RequestListener<Bitmap> {
                 override fun onLoadFailed(
                     e: GlideException?,
@@ -111,7 +107,7 @@ class PlayService : Service() {
     }
 
     fun createNotification(artBitmap: Bitmap?) {
-        val art = artBitmap ?: BitmapFactory.decodeResource(resources, R.drawable.unknown)
+        val art = artBitmap ?: BitmapFactory.decodeResource(resources, UNKNOWN_ART_RES)
 
         val pendingIntent: PendingIntent =
             Intent(this, MainActivity::class.java).let { notificationIntent ->

@@ -7,7 +7,7 @@
     <string name="unknown">Unknown</string>
     <string name="albums_art">AlbumsArt</string>
 
-
+    <!-- Playing Fragment -->
     <string name="SongLoop">Song Loop</string>
     <string name="ListPlay">List Play</string>
     <string name="ListLoop">List Loop</string>
@@ -19,4 +19,34 @@
     <string name="playing">playing</string>
     <string name="volume_up">volume up</string>
     <string name="volume_down">volume down</string>
+    <string name="now_mute">Now: Mute</string>
+    <string name="now_unmute">Now: UnMute</string>
+    <string name="now_voice100">%d  %%</string>
+
+    <!-- Preference Titles -->
+    <string name="sync_header">Sync</string>
+    <string name="music_header">Music</string>
+
+    <!-- Music Preferences -->
+    <string name="signature_title">Your signature</string>
+    <string name="ignoreCacheAlbumArt">Ignore Cache Album Art</string>
+    <string name="reply_title">Default reply action</string>
+
+    <!-- Sync Preferences -->
+    <string name="sync_title">Sync email periodically</string>
+    <string name="attachment_title">Download incoming attachments</string>
+    <string name="attachment_summary_on">Automatically download attachments for incoming emails
+    </string>
+    <string name="attachment_summary_off">Only download attachments when manually requested</string>
+    <string name="app_header">App</string>
+    <string name="load_album_art_title">Load Album Art</string>
+    <string name="load_album_art_summary_off">Will no longer load albums</string>
+    <string name="load_album_art_summary_on">Will continue to load albums</string>
+    <string name="update_media_store_title">Update Media Store</string>
+    <string name="update_media_store_summary">Force refresh of media library</string>
+    <string name="clear_cache_title">Clear Cache</string>
+    <string name="clear_cache_summary">Clean up the program cache</string>
+    <string name="not_yet_supported">Not yet supported</string>
+    <string name="cleaned_up">cleaned up</string>
+    <string name="take_effect_after_restart">Take effect after restart</string>
 </resources>
