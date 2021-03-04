@@ -23,7 +23,6 @@ import com.studio.owo.player.OwOPlayerApplication.Companion.REQUEST_NOTIFICATION
 import com.studio.owo.player.OwOPlayerApplication.Companion.REQUEST_NOTIFICATION_CODE_PREVIOUS_PLAY
 import com.studio.owo.player.OwOPlayerApplication.Companion.SERVICE_NOTIFICATION_ID
 import com.tencent.mm.R
-import com.studio.owo.player.data.locally.Song
 import com.studio.owo.player.data.locally.utils.MediaStoreProvider
 import com.studio.owo.player.data.locally.utils.MusicPlay
 import com.studio.owo.player.OwOPlayerApplication.Companion.CHANNEL_SERVICE_IMPORTANCE
@@ -34,21 +33,7 @@ class PlayService : Service() {
 
     private val playMode = MusicPlay.playMode
     val binder = PlayServiceBind()
-    private val onPlayListener = MusicPlay.addOnPlayListener(object : MusicPlay.OnPlayListener {
-
-        override fun onPlayBegins(song: Song, songList: ArrayList<Song>, index: Int) =
-            onViewRedraw()
-
-        override fun onPlayStop() = onViewRedraw()
-        override fun onPlayEnd() = onViewRedraw()
-        override fun onPlayPause() = onViewRedraw()
-        override fun onPlayContinues() = onViewRedraw()
-        override fun onRest() = onViewRedraw()
-        override fun onError() = onViewRedraw()
-        override fun onPlayModeChange(playModeType: Int) = onViewRedraw()
-        override fun onViewRedraw() = onPlay()
-
-    })
+    private val onPlayBackListener = MusicPlay.addPlayBackListener { _,_ -> onPlay() }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         intent?.let {
@@ -58,7 +43,7 @@ class PlayService : Service() {
                 REQUEST_NOTIFICATION_CODE_NEXT_PLAY -> MusicPlay.playMode.next()
             }
         }
-        return START_STICKY.takeIf { MusicPlay.isPlaying } ?: START_NOT_STICKY
+        return START_STICKY.takeIf { MusicPlay.playMode.isPlaying } ?: START_NOT_STICKY
     }
 
     override fun onBind(intent: Intent): IBinder {
@@ -67,7 +52,8 @@ class PlayService : Service() {
 
     override fun onDestroy() {
         super.onDestroy()
-        MusicPlay.removePlayListener(onPlayListener)
+        //MusicPlay.removePlayListener(onPlayListener)
+        MusicPlay.removePlayBackListener(onPlayBackListener)
     }
 
     fun onPlay() {
@@ -130,7 +116,7 @@ class PlayService : Service() {
             .setLargeIcon(art.copy(art.config, art.isMutable))
             .setContentIntent(pendingIntent)
             .setTicker(getText(R.string.app_name))
-            .setOngoing(MusicPlay.isPlaying)
+            .setOngoing(MusicPlay.playMode.isPlaying)
             .setStyle(
                 androidx.media.app.NotificationCompat.MediaStyle()
                     .setMediaSession(
@@ -140,7 +126,7 @@ class PlayService : Service() {
                             ComponentName(this@PlayService, Intent.ACTION_MEDIA_BUTTON),
                             null
                         ).sessionToken
-                    ).setShowActionsInCompactView(0,1,2)
+                    ).setShowActionsInCompactView(0, 1, 2)
             )
             .addAction(
                 R.drawable.ic_skip_previous_black_24dp, getString(R.string.previous_play),
@@ -148,7 +134,7 @@ class PlayService : Service() {
             )
             .let {
                 val intent = getPendingIntent(REQUEST_NOTIFICATION_CODE_PAUSE_PLAY)
-                if (MusicPlay.isPlaying) {
+                if (MusicPlay.playMode.isPlaying) {
                     it.addAction(
                         R.drawable.ic_pause_black_24dp, getString(R.string.pause), intent
                     )
@@ -183,7 +169,7 @@ class PlayService : Service() {
         fun getServiceSelf() = this@PlayService
 
         fun onBindDestroy() {
-            if (MusicPlay.over) {
+            if (!MusicPlay.playMode.isPlaying) {
                 this@PlayService.stopSelf()
                 this@PlayService.stopForeground(true)
             }

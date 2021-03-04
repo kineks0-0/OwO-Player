@@ -1,17 +1,11 @@
 package com.studio.owo.player.ui.viewpage
 
 import android.annotation.SuppressLint
-import android.content.res.Resources
-import android.graphics.Bitmap
-import android.graphics.Color
-import android.graphics.Paint
-import android.graphics.drawable.Drawable
 import android.os.Build
 import androidx.lifecycle.ViewModelProvider
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -20,20 +14,12 @@ import android.widget.ImageView
 import androidx.databinding.BindingAdapter
 import androidx.lifecycle.MutableLiveData
 import com.bumptech.glide.Glide
-import com.bumptech.glide.load.DataSource
-import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.load.resource.bitmap.CenterCrop
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners
-import com.bumptech.glide.request.RequestListener
-import com.bumptech.glide.request.target.Target
-import com.google.android.material.shape.MaterialShapeDrawable
-import com.google.android.material.shape.RoundedCornerTreatment
-import com.google.android.material.shape.ShapeAppearanceModel
 import com.tencent.mm.R
 import com.studio.owo.player.data.locally.utils.MediaStoreProvider
 import com.studio.owo.player.data.locally.utils.MusicPlay
 import com.studio.owo.player.data.locally.Song
-import com.studio.owo.player.getContext
 import com.tencent.mm.databinding.PlayingFragmentBinding
 import com.studio.owo.player.ui.viewpage.model.PlayingViewModel
 import kotlinx.coroutines.Dispatchers
@@ -88,7 +74,7 @@ class PlayingFragment : Fragment(), OnPageSelectedChange {
     private val onPlayListener = MusicPlay.addOnPlayListener(object : MusicPlay.OnPlayListener {
 
         @SuppressLint("SetTextI18n")
-        override fun onPlayBegins(song: Song, songList: ArrayList<Song>, index: Int) =
+        override fun onPlayBegins(playMode: MusicPlay.PlayMode) =
             onPlayButtonRedraw()
 
         override fun onPlayStop() = onPlayButtonRedraw()
@@ -116,7 +102,7 @@ class PlayingFragment : Fragment(), OnPageSelectedChange {
             //仅 Fragment 可见时更新视图
             if (!this@PlayingFragment.isVisible) return
             //binding.playing = MusicPlay.isPlaying
-            if (MusicPlay.isPlaying)
+            if (MusicPlay.playMode.isPlaying)
                 binding.playButton.setImageResource(R.drawable.ic_pause_black_48dp)
             else
                 binding.playButton.setImageResource(R.drawable.ic_play_arrow_black_48dp)

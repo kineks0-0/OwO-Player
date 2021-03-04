@@ -33,28 +33,15 @@ class PlayingViewModel : ViewModel() {
         private var playService: PlayService? = null
         private var mBound: Boolean = false
 
-        /** Defines callbacks for service binding, passed to bindService()  */
-        private val connection by lazy {
-            object : ServiceConnection {
-
-                override fun onServiceConnected(className: ComponentName, service: IBinder) {
-                    // We've bound to LocalService, cast the IBinder and get LocalService instance
-                    val binder = service as PlayService.PlayServiceBind
-                    playService = binder.getServiceSelf()
-                    //serviceBind = binder
-                    mBound = true
-                }
-
-                override fun onServiceDisconnected(arg0: ComponentName) {
-                    mBound = false
-                }
-            }
-        }
-
         var lastCurrentItem = 0
 
     }
 
+
+
+
+
+    // For DataBinding
 
     val song: ObservableField<Song> = ObservableField()
         get() {
@@ -85,19 +72,17 @@ class PlayingViewModel : ViewModel() {
 
     fun onPlayModeChange(view: View, playModeType: Int) {
         when (playModeType) {
-            MusicPlay.SongLoop -> Snackbar.make(view, R.string.SongLoop, Snackbar.LENGTH_SHORT)
+            MusicPlay.PlayMode.SongLoop -> Snackbar.make(view, R.string.SongLoop, Snackbar.LENGTH_SHORT)
                 .show()
-            MusicPlay.ListLoop -> Snackbar.make(view, R.string.ListLoop, Snackbar.LENGTH_SHORT)
+            MusicPlay.PlayMode.ListLoop -> Snackbar.make(view, R.string.ListLoop, Snackbar.LENGTH_SHORT)
                 .show()
-            MusicPlay.ListPlay -> Snackbar.make(view, R.string.ListPlay, Snackbar.LENGTH_SHORT)
+            MusicPlay.PlayMode.ListPlay -> Snackbar.make(view, R.string.ListPlay, Snackbar.LENGTH_SHORT)
                 .show()
-            MusicPlay.RandomPlay -> Snackbar.make(view, R.string.RandomPlay, Snackbar.LENGTH_SHORT)
+            MusicPlay.PlayMode.RandomPlay -> Snackbar.make(view, R.string.RandomPlay, Snackbar.LENGTH_SHORT)
                 .show()
         }
     }
 
-
-    // for DataBinding
     fun preSong(view: View) = playMode.previous(true, 0)
     fun playSong(view: View) = playMode.play()
     fun nextSong(view: View) = playMode.next(true, 0)
@@ -123,7 +108,10 @@ class PlayingViewModel : ViewModel() {
     }
 
 
-    // for MainActivity
+
+
+    // For MainActivity
+
     fun onCreate(activity: Activity) {
 
     }

@@ -1,11 +1,7 @@
 package com.studio.owo.player.data.locally.utils
 
 import android.content.Context
-import android.media.AudioManager
-import android.media.AudioManager.OnAudioFocusChangeListener
-import android.media.MediaPlayer
 import android.media.MediaScannerConnection
-import android.os.PowerManager
 import android.util.Log
 import com.studio.owo.player.data.locally.Song
 import com.studio.owo.player.getContext
@@ -15,10 +11,7 @@ object MusicPlay {
 
     private val TAG = javaClass.canonicalName
 
-    private var mediaPlayer = getNewMediaPlayer()
-
-    //private var song: _root_ide_package_.com.tencent.mm.data.locally.Song = _root_ide_package_.com.tencent.mm.data.locally.Song(File("404"),-1L,-1L,-1L,"",-1,"")
-    private val mAudioManager: AudioManager by lazy {
+    /*private val mAudioManager: AudioManager by lazy {
         getContext().getSystemService(
             Context.AUDIO_SERVICE
         ) as AudioManager
@@ -57,25 +50,47 @@ object MusicPlay {
                 }
             }
         }
-    }
+    }*/
 
-    var over = true
-    val isPlaying get() = mediaPlayer.isPlaying
-
-    //public var isPlaying = false
     private val playListeners = ArrayList<OnPlayListener>()
-
     fun addOnPlayListener(onPlayListener: OnPlayListener): OnPlayListener {
         playListeners.add(onPlayListener)
         return onPlayListener
     }
-
     fun removePlayListener(onPlayListener: OnPlayListener) = playListeners.remove(onPlayListener)
 
-    private var onPlayListener: OnPlayListener = object : OnPlayListener {
-        override fun onPlayBegins(song: Song, songList: ArrayList<Song>, index: Int) {
+    private val playBackListeners = ArrayList<PlayBackListener>()
+    private val onPlayBackListener = PlayBackListener { status,playback ->
+        playback.apply {
+            for (listener in playBackListeners)
+                listener.onStatusChange(status)
             for (listener in playListeners)
-                listener.onPlayBegins(song, songList, index)
+                when (status) {
+                    onPlayBegins -> listener.onPlayBegins(playback.playMode)
+                    onPlayStop -> listener.onPlayStop()
+                    onPlayEnd -> listener.onPlayEnd()
+                    onPlayPause -> listener.onPlayPause()
+                    onPlayContinues -> listener.onPlayContinues()
+                    onPlayModeChange -> listener.onPlayModeChange(playback.playMode.getPlayModeID())
+                    onViewRedraw -> listener.onViewRedraw()
+                    onRest -> listener.onRest()
+                    onError -> listener.onError()
+                }
+        }
+
+    }
+
+    fun addPlayBackListener(callback: (status: Int, playBack: PlayBackListener) -> Unit): PlayBackListener {
+        return PlayBackListener(callback).apply {
+            playBackListeners.add(this)
+        }
+    }
+    fun removePlayBackListener(onPlayBackListener: PlayBackListener) = playBackListeners.remove(onPlayBackListener)
+
+    /*private val onPlayListener: OnPlayListener = object : OnPlayListener {
+        override fun onPlayBegins(playMode: PlayMode) {
+            for (listener in playListeners)
+                listener.onPlayBegins(playMode)
         }
 
         override fun onPlayStop() {
@@ -117,9 +132,8 @@ object MusicPlay {
             for (listener in playListeners)
                 listener.onError()
         }
-    }//默认接口
-
-    val headSetListener: HeadSetUtil.OnHeadSetListener = object : HeadSetUtil.OnHeadSetListener {
+    }*/
+    /*val headSetListener: HeadSetUtil.OnHeadSetListener = object : HeadSetUtil.OnHeadSetListener {
         override fun onClick() {
             //单击: 播放/暂停;
             Log.i(HeadSetUtil::class.java.name, "单击")
@@ -137,26 +151,64 @@ object MusicPlay {
             Log.i(HeadSetUtil::class.java.name, "三连击")
             playMode.previous()
         }
+    }*/
+
+    var playMode: PlayMode = PlayModeImp(onPlayBackListener)
+    //由 PlayMode 完成播放控制和列表播放
+
+    interface OnPlayListener {
+        fun onPlayBegins(playMode: PlayMode)
+        fun onPlayStop()
+        fun onPlayEnd()
+        fun onPlayPause()
+        fun onPlayContinues()
+        fun onPlayModeChange(playModeType: Int)
+        fun onViewRedraw()
+        fun onRest()
+        fun onError()
     }
 
 
-    const val SongLoop = 0
-    const val ListPlay = 1
-    const val ListLoop = 2
-    const val RandomPlay = 3
+    class PlayBackListener(
+        private val callback: (status: Int,playBack: PlayBackListener) -> Unit
+    ) {
+        val onPlayBegins = 1
+        val onPlayStop = 2
+        val onPlayEnd = 3
+        val onPlayPause = 4
+        val onPlayContinues = 5
+        val onPlayModeChange = 6
+        val onViewRedraw = 7
+        val onRest = 8
+        val onError = 9
 
-    var playMode: PlayMode = object : PlayMode {
+        fun onStatusChange(status: Int) = callback.invoke(status,this)
 
+        val playMode get() = MusicPlay.playMode
+        fun onPlayBegins() = onStatusChange(onPlayBegins)
+        fun onPlayStop() = onStatusChange(onPlayStop)
+        fun onPlayEnd() = onStatusChange(onPlayEnd)
+        fun onPlayPause() = onStatusChange(onPlayPause)
+        fun onPlayContinues() = onStatusChange(onPlayContinues)
+        fun onPlayModeChange() = onStatusChange(onPlayModeChange)
+        fun onViewRedraw() = onStatusChange(onViewRedraw)
+        fun onRest() = onStatusChange(onRest)
+        fun onError() = onStatusChange(onError)
+    }
 
-        val SongLoop = 0
-        val ListPlay = 1
-        val ListLoop = 2
-        val RandomPlay = 3
-        //val playMode = 0
+    abstract class PlayMode(private val onPlayBackListener: PlayBackListener) {
+
+        companion object {
+            const val SongLoop = 0
+            const val ListPlay = 1
+            const val ListLoop = 2
+            const val RandomPlay = 3
+        }
 
         private var playModeID: Int = ListPlay
-        override fun getPlayModeID(): Int = playModeID
+        fun getPlayModeID(): Int = playModeID
 
+        abstract val isPlaying: Boolean
         var playingSong: Song? = null
         var index: Int = -1
             set(newIndex) {
@@ -172,17 +224,16 @@ object MusicPlay {
         var songList: ArrayList<Song> = ArrayList()
         val playList: ArrayList<Song> = ArrayList()
 
-
-        override fun switchPlayMode() {
+        fun switchPlayMode() {
             playModeID = when (playModeID) {
                 RandomPlay -> SongLoop
                 else -> playModeID + 1
             }
             switchPlayMode(playModeID)
-            onPlayListener.onPlayModeChange(playModeID)
+            onPlayBackListener.onPlayModeChange()
         }
 
-        override fun switchPlayMode(playModeID: Int) {
+        fun switchPlayMode(playModeID: Int) {
             this.playModeID = playModeID
             val where = playingSong
             //index = 0
@@ -235,24 +286,24 @@ object MusicPlay {
                     }
                 }
             }
-            onPlayListener.onViewRedraw()
+            onPlayBackListener.onViewRedraw()
         }
 
-        override fun update(songList: ArrayList<Song>, index: Int) {
+        fun update(songList: ArrayList<Song>, index: Int) {
             if (this.songList != songList)
                 this.songList = songList
             this.index = index
             switchPlayMode(playModeID)
         }
 
-        override fun update(songList: ArrayList<Song>, index: Song) {
+        fun update(songList: ArrayList<Song>, index: Song) {
             if (this.songList != songList)
                 this.songList = songList
             this.index = playList.indexOf(index)
             switchPlayMode(playModeID)
         }
 
-        override fun update(songList: ArrayList<Song>) {
+        fun update(songList: ArrayList<Song>) {
             if (this.songList.size != 0) {
                 if (playingSong == null) index = 0
                 val song = getPlayingSong(0)
@@ -272,133 +323,93 @@ object MusicPlay {
             }
         }
 
-        override fun update(index: Int) {
+        fun update(index: Int) {
             this.index = index
         }
 
-        override fun update(index: Song) {
+        fun update(index: Song) {
             if (index.file.get()!!.exists())
                 this.index = playList.indexOf(index)
         }
 
-        override fun getSongIndex(): Int = index
+        fun getSongIndex(): Int = index
 
-        override fun play() {
+        fun play() {
             if (playingSong == null || index == -1) {
                 if (playList.size != 0) play(0)
                 return
             }
-            if (mediaPlayer.isPlaying)
+            if (isPlaying)
                 pausePlay()
             else {
                 continuesPlay()
-                if (!mediaPlayer.isPlaying)
+                if (!isPlaying)
                     if (playList.size != 0)
                         play(0)
             }
         }
 
-        override fun play(songList: ArrayList<Song>, index: Int) {
+        fun play(songList: ArrayList<Song>, index: Int) {
             update(songList, index)
             play(this.index)
         }
 
-        override fun play(index: Song) {
+        fun play(index: Song) {
             play(playList.indexOf(index))
         }
 
-        override fun play(index: Int) {
-
+        fun play(index: Int) {
             this.index = index
             if (playingSong == null) {
-                onPlayListener.onError()
+                onPlayBackListener.onError()
                 return
             }
-            //if (index < 0 || index > playList.lastIndex || playList.size == 0) return
-            over = false
-
             val song: Song = playingSong ?: playList[index]
-
-
-
-            if (mediaPlayer.isPlaying) mediaPlayer.stop()
-            mediaPlayer.reset()
-            onPlayListener.onRest()
-
-            try {
-                val file = song.file.get()!!
-                //mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC)
-                //mediaPlayer.setDataSource(file.inputStream().fd,0,file.length())
-                mediaPlayer.setDataSource(file.absolutePath)
-
-            } catch (e: Exception) {
-                Log.e(this@MusicPlay.toString(), e.message, e)
-                //isPlaying = false
-                over = true
-                onPlayListener.onError()
-                mediaPlayer.reset()
-                onPlayListener.onRest()
-                return
-            }
-
-            mediaPlayer.setOnPreparedListener {
-
-                mediaPlayer.start()
-                mAudioManager.requestAudioFocus(
-                    mAudioFocusChange,
-                    AudioManager.STREAM_MUSIC,
-                    AudioManager.AUDIOFOCUS_GAIN
-                )
-
-                //isPlaying = true
-                over = false
-                onPlayListener.onPlayBegins(song, playList, index)
-                onPlayListener.onViewRedraw()
-            }
-            mediaPlayer.prepareAsync()
-            //mediaPlayer.prepare()
-
+            if (isPlaying) stop()
+            playSong(song)
+            onPlayBackListener.onViewRedraw()
         }
 
-
-        override fun continuesPlay() {
+        fun continuesPlay() {
             if (playingSong == null) {
                 play(0)
                 return
             }
-            mediaPlayer.start()
-            //isPlaying = true
-            over = false
-            onPlayListener.onPlayContinues()
+            play(true)
+            onPlayBackListener.onPlayContinues()
         }
 
-        override fun pausePlay() {
-            //if (over) return
-            mediaPlayer.pause()
-            //isPlaying = false
-            over = true
-            onPlayListener.onPlayPause()
+        fun pausePlay() {
+            play(false)
+            onPlayBackListener.onPlayPause()
         }
 
-        override fun stopPlay() {
-            mediaPlayer.stop()
-            over = true
-            onPlayListener.onPlayStop()
+        fun stopPlay() {
+            stop()
+            onPlayBackListener.onPlayStop()
         }
 
-        override fun getPreviousIndex(onUserDo: Boolean, offset: Int): Int {
+        abstract fun playSong(song: Song)
+        abstract fun play(isPlay: Boolean)
+        abstract fun stop()
+
+        fun getPreviousIndex(onUserDo: Boolean, offset: Int): Int {
             //auto = true
             return if (playModeID == SongLoop) {
                 index
             } else {
                 var previousPosition = index - 1 - offset
-                if (previousPosition < 0) previousPosition = playList.lastIndex
+                if (previousPosition < 0)
+                    previousPosition = if (onUserDo) {
+                        playList.lastIndex
+                    } else {
+                        0
+                    }
                 previousPosition
             }
         }
 
-        override fun getNextIndex(onUserDO: Boolean, offset: Int): Int {
-            //auto = true
+        fun getNextIndex(onUserDO: Boolean, offset: Int): Int {
             return if (playModeID == SongLoop) {
                 index
             } else {
@@ -413,7 +424,7 @@ object MusicPlay {
             }
         }
 
-        override fun getPlayingSong(offset: Int): Song? {
+        fun getPlayingSong(offset: Int): Song? {
             if (playingSong == null) index = 0
             return if (index + offset < playList.size)
                 playList[index + offset]
@@ -421,78 +432,21 @@ object MusicPlay {
                 null
         }
 
-        override fun getSong(index: Int): Song? {
+        fun getSong(index: Int): Song? {
             if (index < 0 || index > playList.lastIndex) {
                 return null
             }
             return playList[index]
         }
 
-        override fun previous(onUserDo: Boolean, offset: Int) =
-            play(getPreviousIndex(onUserDo, offset))
-
-        override fun next(onUserDo: Boolean, offset: Int) =
-            play(getNextIndex(onUserDo, offset))
-
-        override fun previous() = previous(false, 0)
-        override fun next() = next(false, 0)
-
-    }
-//由 PlayMode 完成播放控制和列表播放
-
-    interface OnPlayListener {
-        fun onPlayBegins(song: Song, songList: ArrayList<Song>, index: Int)
-        fun onPlayStop()
-        fun onPlayEnd()
-        fun onPlayPause()
-        fun onPlayContinues()
-        fun onPlayModeChange(playModeType: Int)
-        fun onViewRedraw()
-        fun onRest()
-        fun onError()
+        fun previous(onUserDo: Boolean = false, offset: Int = 0) = play(getPreviousIndex(onUserDo, offset))
+        fun next(onUserDo: Boolean = false, offset: Int = 0) = play(getNextIndex(onUserDo, offset))
+        //fun previous() = previous(false, 0)
+        //fun next() = next(false, 0)
     }
 
-    interface PlayMode {
 
-        fun switchPlayMode()
-        fun switchPlayMode(playModeID: Int)
-        fun getPlayModeID(): Int
-
-        fun update(songList: ArrayList<Song>, index: Int)
-        fun update(songList: ArrayList<Song>, index: Song)
-        fun update(songList: ArrayList<Song>)
-        fun update(index: Int)
-        fun update(index: Song)
-        fun getSongIndex(): Int
-
-        fun play()
-        fun play(songList: ArrayList<Song>, index: Int)
-        fun pausePlay()
-        fun continuesPlay()
-        fun stopPlay()
-
-        fun getPreviousIndex(onUserDo: Boolean, offset: Int): Int
-        fun getNextIndex(onUserDO: Boolean, offset: Int): Int
-        fun getPlayingSong(offset: Int): Song?
-        fun getSong(index: Int): Song?
-
-        fun previous(onUserDo: Boolean, offset: Int)
-        fun previous()
-        fun next(onUserDo: Boolean, offset: Int)
-        fun next()
-        fun play(index: Int)
-        fun play(index: Song)
-
-        /*companion object {
-            const val SongLoop = 0
-            const val ListPlay = 1
-            const val ListLoop = 2
-            const val RandomPlay = 3
-            const val playMode = 0
-        }*/
-    }
-
-    private fun getNewMediaPlayer(): MediaPlayer {
+    /*private fun getNewMediaPlayer(): MediaPlayer {
 
         val mediaPlayer = MediaPlayer()
         mediaPlayer.setOnCompletionListener {
@@ -518,7 +472,7 @@ object MusicPlay {
         mediaPlayer.isLooping = false
 
         return mediaPlayer
-    }
+    }*/
 
     /**
      * 通知android媒体库更新文件夹
@@ -537,5 +491,46 @@ object MusicPlay {
             e.printStackTrace()
         }
     }
+
+}
+
+class PlayModeImp(onPlayBackListener: MusicPlay.PlayBackListener) :
+    MusicPlay.PlayMode(onPlayBackListener) {
+
+    private val onPlayBack = MusicPlayer.OnPlayBackStatusChange { status,playback ->
+        when (status) {
+            playback.onPlayBegins -> {
+                onPlayBackListener.onPlayBegins()
+            }
+            playback.onPlayEnd -> {
+                onPlayBackListener.onPlayEnd()
+                next(true)
+            }
+            playback.onRest -> {
+                onPlayBackListener.onRest()
+            }
+            playback.onError -> {
+                onPlayBackListener.onError()
+            }
+        }
+    }
+
+    private val player = AudioPlayer(onPlayBack)
+    override val isPlaying get() = player.isPlaying
+    val over: Boolean
+        get() = !isPlaying
+
+    override fun play(isPlay: Boolean) {
+        if (isPlay)
+            player.start()
+        else
+            player.pause()
+    }
+
+    override fun playSong(song: Song) {
+        player.play(song)
+    }
+
+    override fun stop() = player.stop()
 
 }
