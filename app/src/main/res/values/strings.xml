@@ -49,4 +49,6 @@
     <string name="not_yet_supported">Not yet supported</string>
     <string name="cleaned_up">cleaned up</string>
     <string name="take_effect_after_restart">Take effect after restart</string>
+    <string name="play_header">Play</string>
+    <string name="useExoPlayer">Use ExoPlayer</string>
 </resources>

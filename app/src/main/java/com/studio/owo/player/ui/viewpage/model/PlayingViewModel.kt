@@ -3,6 +3,7 @@ package com.studio.owo.player.ui.viewpage.model
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.ComponentName
+import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
 import android.os.IBinder
@@ -10,7 +11,6 @@ import android.util.Log
 import android.view.KeyEvent
 import android.view.View
 import androidx.databinding.ObservableField
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.google.android.material.snackbar.Snackbar
 import com.studio.owo.player.data.service.PlayService
@@ -32,6 +32,22 @@ class PlayingViewModel : ViewModel() {
         @SuppressLint("StaticFieldLeak")
         private var playService: PlayService? = null
         private var mBound: Boolean = false
+
+        /** Defines callbacks for service binding, passed to bindService()  */
+        private val connection = object : ServiceConnection {
+
+            override fun onServiceConnected(className: ComponentName, service: IBinder) {
+                // We've bound to LocalService, cast the IBinder and get LocalService instance
+                val binder = service as PlayService.PlayServiceBind
+                playService = binder.getServiceSelf()
+                //serviceBind = binder
+                mBound = true
+            }
+
+            override fun onServiceDisconnected(arg0: ComponentName) {
+                mBound = false
+            }
+        }
 
         var lastCurrentItem = 0
 
@@ -117,16 +133,22 @@ class PlayingViewModel : ViewModel() {
     }
 
     fun onStart(activity: Activity) {
-        if (playService == null && mBound) {
-            Intent(getContext(), PlayService::class.java).also { intent ->
+        if (playService == null) {
+            Intent(activity, PlayService::class.java).also { intent ->
                 activity.startService(intent)
+                activity.bindService(intent, connection, Context.BIND_AUTO_CREATE)
             }
+
         }
     }
 
     fun onDestroy(activity: Activity) {
         try {
             playService?.binder?.onBindDestroy()
+            if (!playMode.isPlaying && playService!=null){
+                activity.unbindService(connection)
+                playService = null
+            }
         } catch (e: Exception) {
             Log.e(this::javaClass.toString(), e.message, e)
         }
@@ -227,7 +249,8 @@ class PlayingViewModel : ViewModel() {
                 KeyEvent.KEYCODE_9 -> false //这里由 RecyclerView 消费
 
                 KeyEvent.KEYCODE_BACK -> {      //直接销毁
-                    activity.onBackPressed()
+                    if (!activity.onBackKey())
+                        activity.finish()
                     true
                 }
 

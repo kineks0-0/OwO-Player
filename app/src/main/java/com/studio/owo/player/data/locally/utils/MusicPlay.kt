@@ -3,6 +3,7 @@ package com.studio.owo.player.data.locally.utils
 import android.content.Context
 import android.media.MediaScannerConnection
 import android.util.Log
+import androidx.preference.PreferenceManager
 import com.studio.owo.player.data.locally.Song
 import com.studio.owo.player.getContext
 
@@ -53,15 +54,17 @@ object MusicPlay {
     }*/
 
     private val playListeners = ArrayList<OnPlayListener>()
-    fun addOnPlayListener(onPlayListener: OnPlayListener): OnPlayListener {
+    fun addOnPlayBackListener(onPlayListener: OnPlayListener): OnPlayListener {
         playListeners.add(onPlayListener)
         return onPlayListener
     }
-    fun removePlayListener(onPlayListener: OnPlayListener) = playListeners.remove(onPlayListener)
+
+    fun removePlayBackListener(onPlayListener: OnPlayListener) = playListeners.remove(onPlayListener)
 
     private val playBackListeners = ArrayList<PlayBackListener>()
-    private val onPlayBackListener = PlayBackListener { status,playback ->
+    private val onPlayBackListener = PlayBackListener { status, playback ->
         playback.apply {
+            playMode.isPlaying
             for (listener in playBackListeners)
                 listener.onStatusChange(status)
             for (listener in playListeners)
@@ -72,9 +75,10 @@ object MusicPlay {
                     onPlayPause -> listener.onPlayPause()
                     onPlayContinues -> listener.onPlayContinues()
                     onPlayModeChange -> listener.onPlayModeChange(playback.playMode.getPlayModeID())
-                    onViewRedraw -> listener.onViewRedraw()
                     onRest -> listener.onRest()
                     onError -> listener.onError()
+                    onViewRedraw -> listener.onViewRedraw()
+                    onPlayButtonRedraw -> listener.onPlayButtonRedraw(playback.playMode.isPlaying)
                 }
         }
 
@@ -85,75 +89,17 @@ object MusicPlay {
             playBackListeners.add(this)
         }
     }
-    fun removePlayBackListener(onPlayBackListener: PlayBackListener) = playBackListeners.remove(onPlayBackListener)
 
-    /*private val onPlayListener: OnPlayListener = object : OnPlayListener {
-        override fun onPlayBegins(playMode: PlayMode) {
-            for (listener in playListeners)
-                listener.onPlayBegins(playMode)
-        }
+    fun removePlayBackListener(onPlayBackListener: PlayBackListener) =
+        playBackListeners.remove(onPlayBackListener)
 
-        override fun onPlayStop() {
-            for (listener in playListeners)
-                listener.onPlayStop()
-        }
-
-        override fun onPlayEnd() {
-            for (listener in playListeners)
-                listener.onPlayEnd()
-        }
-
-        override fun onPlayPause() {
-            for (listener in playListeners)
-                listener.onPlayPause()
-        }
-
-        override fun onPlayContinues() {
-            for (listener in playListeners)
-                listener.onPlayContinues()
-        }
-
-        override fun onPlayModeChange(playModeType: Int) {
-            for (listener in playListeners)
-                listener.onPlayModeChange(playModeType)
-        }
-
-        override fun onViewRedraw() {
-            for (listener in playListeners)
-                listener.onViewRedraw()
-        }
-
-        override fun onRest() {
-            for (listener in playListeners)
-                listener.onRest()
-        }
-
-        override fun onError() {
-            for (listener in playListeners)
-                listener.onError()
-        }
-    }*/
-    /*val headSetListener: HeadSetUtil.OnHeadSetListener = object : HeadSetUtil.OnHeadSetListener {
-        override fun onClick() {
-            //单击: 播放/暂停;
-            Log.i(HeadSetUtil::class.java.name, "单击")
-            playMode.play()
-        }
-
-        override fun onDoubleClick() {
-            //双击: 下一首;
-            Log.i(HeadSetUtil::class.java.name, "双击")
-            playMode.next()
-        }
-
-        override fun onThreeClick() {
-            //三击: 上一首;
-            Log.i(HeadSetUtil::class.java.name, "三连击")
-            playMode.previous()
-        }
-    }*/
-
-    var playMode: PlayMode = PlayModeImp(onPlayBackListener)
+    var playMode: PlayMode =
+        if (PreferenceManager.getDefaultSharedPreferences(getContext())
+                .getBoolean("useExoPlayer", true)
+        )
+            PlayModeExoImp(onPlayBackListener)
+        else
+            PlayModeMediaImp(onPlayBackListener)
     //由 PlayMode 完成播放控制和列表播放
 
     interface OnPlayListener {
@@ -163,14 +109,15 @@ object MusicPlay {
         fun onPlayPause()
         fun onPlayContinues()
         fun onPlayModeChange(playModeType: Int)
-        fun onViewRedraw()
         fun onRest()
         fun onError()
+        fun onViewRedraw()
+        fun onPlayButtonRedraw(isPlaying: Boolean)
     }
 
 
     class PlayBackListener(
-        private val callback: (status: Int,playBack: PlayBackListener) -> Unit
+        private val callback: (status: Int, playBack: PlayBackListener) -> Unit
     ) {
         val onPlayBegins = 1
         val onPlayStop = 2
@@ -178,11 +125,12 @@ object MusicPlay {
         val onPlayPause = 4
         val onPlayContinues = 5
         val onPlayModeChange = 6
-        val onViewRedraw = 7
-        val onRest = 8
-        val onError = 9
+        val onRest = 7
+        val onError = 8
+        val onViewRedraw = 9
+        val onPlayButtonRedraw = 10
 
-        fun onStatusChange(status: Int) = callback.invoke(status,this)
+        fun onStatusChange(status: Int) = callback.invoke(status, this)
 
         val playMode get() = MusicPlay.playMode
         fun onPlayBegins() = onStatusChange(onPlayBegins)
@@ -194,7 +142,10 @@ object MusicPlay {
         fun onViewRedraw() = onStatusChange(onViewRedraw)
         fun onRest() = onStatusChange(onRest)
         fun onError() = onStatusChange(onError)
+        fun onPlayButtonRedraw() = onStatusChange(onPlayButtonRedraw)
     }
+
+
 
     abstract class PlayMode(private val onPlayBackListener: PlayBackListener) {
 
@@ -377,16 +328,19 @@ object MusicPlay {
             }
             play(true)
             onPlayBackListener.onPlayContinues()
+            onPlayBackListener.onPlayButtonRedraw()
         }
 
         fun pausePlay() {
             play(false)
             onPlayBackListener.onPlayPause()
+            onPlayBackListener.onPlayButtonRedraw()
         }
 
         fun stopPlay() {
             stop()
             onPlayBackListener.onPlayStop()
+            onPlayBackListener.onPlayButtonRedraw()
         }
 
         abstract fun playSong(song: Song)
@@ -439,40 +393,13 @@ object MusicPlay {
             return playList[index]
         }
 
-        fun previous(onUserDo: Boolean = false, offset: Int = 0) = play(getPreviousIndex(onUserDo, offset))
+        fun previous(onUserDo: Boolean = false, offset: Int = 0) =
+            play(getPreviousIndex(onUserDo, offset))
         fun next(onUserDo: Boolean = false, offset: Int = 0) = play(getNextIndex(onUserDo, offset))
         //fun previous() = previous(false, 0)
         //fun next() = next(false, 0)
     }
 
-
-    /*private fun getNewMediaPlayer(): MediaPlayer {
-
-        val mediaPlayer = MediaPlayer()
-        mediaPlayer.setOnCompletionListener {
-            //isPlaying = false
-            over = true
-            playMode.next()
-            onPlayListener.onPlayEnd()
-        }
-
-        // 设置播放错误监听
-        mediaPlayer.setOnErrorListener { mp, _, _ ->
-            //isPlaying = false
-            over = true
-            onPlayListener.onError()
-            mp.reset()
-            onPlayListener.onRest()
-            true
-        }
-
-        // 设置设备进入锁状态模式-可在后台播放或者缓冲音乐-CPU一直工作
-        mediaPlayer.setWakeMode(getContext(), PowerManager.PARTIAL_WAKE_LOCK)
-        mediaPlayer.setVolume(1.0F, 1.0F)
-        mediaPlayer.isLooping = false
-
-        return mediaPlayer
-    }*/
 
     /**
      * 通知android媒体库更新文件夹
@@ -494,23 +421,36 @@ object MusicPlay {
 
 }
 
-class PlayModeImp(onPlayBackListener: MusicPlay.PlayBackListener) :
+class PlayModeMediaImp(onPlayBackListener: MusicPlay.PlayBackListener) :
     MusicPlay.PlayMode(onPlayBackListener) {
 
-    private val onPlayBack = MusicPlayer.OnPlayBackStatusChange { status,playback ->
+    private val onPlayBack = MusicPlayer.OnPlayBackStatusChange { status, playback ->
         when (status) {
             playback.onPlayBegins -> {
-                onPlayBackListener.onPlayBegins()
+                onPlayBackListener.onViewRedraw()
+                if (playback.loadFailed)
+                    onPlayBackListener.onError()
+                else
+                    onPlayBackListener.onPlayBegins()
             }
             playback.onPlayEnd -> {
                 onPlayBackListener.onPlayEnd()
+                onPlayBackListener.onPlayButtonRedraw()
                 next(true)
             }
             playback.onRest -> {
                 onPlayBackListener.onRest()
+                onPlayBackListener.onViewRedraw()
             }
             playback.onError -> {
                 onPlayBackListener.onError()
+                onPlayBackListener.onPlayButtonRedraw()
+            }
+            playback.onViewRedraw -> {
+                onPlayBackListener.onViewRedraw()
+            }
+            playback.onPlayButtonRedraw -> {
+                onPlayBackListener.onPlayButtonRedraw()
             }
         }
     }
@@ -522,10 +462,59 @@ class PlayModeImp(onPlayBackListener: MusicPlay.PlayBackListener) :
 
     override fun play(isPlay: Boolean) {
         if (isPlay)
-            player.start()
+            player.play(true)
         else
             player.pause()
     }
+
+    override fun playSong(song: Song) {
+        player.play(song)
+    }
+
+    override fun stop() = player.stop()
+
+}
+
+class PlayModeExoImp(onPlayBackListener: MusicPlay.PlayBackListener) :
+    MusicPlay.PlayMode(onPlayBackListener) {
+
+    private val onPlayBack = MusicPlayer.OnPlayBackStatusChange { status, playback ->
+        when (status) {
+            playback.onPlayBegins -> {
+                onPlayBackListener.onViewRedraw()
+                if (playback.loadFailed)
+                    onPlayBackListener.onError()
+                else
+                    onPlayBackListener.onPlayBegins()
+            }
+            playback.onPlayEnd -> {
+                onPlayBackListener.onPlayEnd()
+                onPlayBackListener.onPlayButtonRedraw()
+                this.next(true)
+            }
+            playback.onRest -> {
+                onPlayBackListener.onRest()
+                onPlayBackListener.onViewRedraw()
+            }
+            playback.onError -> {
+                onPlayBackListener.onError()
+                onPlayBackListener.onPlayButtonRedraw()
+            }
+            playback.onViewRedraw -> {
+                onPlayBackListener.onViewRedraw()
+            }
+            playback.onPlayButtonRedraw -> {
+                onPlayBackListener.onPlayButtonRedraw()
+            }
+        }
+    }
+
+    private val player = ExoAudioPlayer(onPlayBack, getContext())
+    override val isPlaying get() = player.isPlaying
+    val over: Boolean
+        get() = !isPlaying
+
+    override fun play(isPlay: Boolean) = player.play(isPlay)
 
     override fun playSong(song: Song) {
         player.play(song)

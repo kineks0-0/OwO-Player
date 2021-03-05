@@ -8,6 +8,15 @@
 
     </PreferenceCategory>
 
+    <PreferenceCategory app:title="@string/play_header">
+
+        <SwitchPreferenceCompat
+            app:key="useExoPlayer"
+            app:title="@string/useExoPlayer"
+            app:defaultValue="true"/>
+
+    </PreferenceCategory>
+
     <PreferenceCategory app:title="@string/app_header">
 
         <SwitchPreferenceCompat

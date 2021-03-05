@@ -112,8 +112,8 @@ class AlbumFragment : Fragment(), OnPageSelectedChange, FragmentBackHandler {
                 )
                 return true
             }
+            return false
         }
-        return false
     }
 
 
@@ -135,6 +135,7 @@ class AlbumFragment : Fragment(), OnPageSelectedChange, FragmentBackHandler {
 
     //用于处理 RecyclerView 焦点位置（按键兼容）
     override fun onPageSelectedChange(hasFocus: Boolean, position: Int) {
+        if (view == null) return
         if (recyclerView is RecyclerView && recyclerView.visibility == View.VISIBLE) {
             with(recyclerView) {
                 if (adapter == null) {

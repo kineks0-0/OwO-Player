@@ -205,11 +205,8 @@ class MainActivity : AppCompatActivity() {
         playingViewModel.onDestroy(this)
     }
 
-    override fun onBackPressed() {
-        if (!isFragmentBackHandled(pagerAdapter.getItem(binding.viewPage.currentItem))) {
-            super.onBackPressed()
-            //finish()
-        }
+    fun onBackKey(): Boolean {
+        return isFragmentBackHandled(pagerAdapter.getItem(binding.viewPage.currentItem))
     }
 
     override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean = playingViewModel.onKeyDown(

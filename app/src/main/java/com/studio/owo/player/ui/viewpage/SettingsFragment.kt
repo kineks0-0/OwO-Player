@@ -31,6 +31,14 @@ class SettingsFragment : PreferenceFragmentCompat(), OnPageSelectedChange {
                 true
             }
 
+        findPreference<SwitchPreferenceCompat>("useExoPlayer")
+            ?.setOnPreferenceChangeListener { _, newValue ->
+                val useExoPlayer = (newValue as Boolean)
+                Snackbar.make(this.requireView(), R.string.take_effect_after_restart, Snackbar.LENGTH_SHORT)
+                    .show()
+                true
+            }
+
         findPreference<SwitchPreferenceCompat>("load_album_art")
             ?.setOnPreferenceChangeListener { _, newValue ->
                 MediaStoreProvider.loadAlbumArt = (newValue as Boolean)
@@ -114,6 +122,7 @@ class SettingsFragment : PreferenceFragmentCompat(), OnPageSelectedChange {
     private var lastHasFocusHolder = -1
     private var hasFocusHolder = -1
     override fun onPageSelectedChange(hasFocus: Boolean, position: Int) {
+        if (view==null) return
         with(super.getListView()) {
             if (adapter == null) {
                 return@with

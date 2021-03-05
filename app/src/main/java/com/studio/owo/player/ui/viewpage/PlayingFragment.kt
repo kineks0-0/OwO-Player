@@ -71,44 +71,43 @@ class PlayingFragment : Fragment(), OnPageSelectedChange {
     private lateinit var binding: PlayingFragmentBinding
     private lateinit var viewModel: PlayingViewModel
     // 设置播放监听,在onDestroyView时移除监听
-    private val onPlayListener = MusicPlay.addOnPlayListener(object : MusicPlay.OnPlayListener {
+    private val onPlayListener = MusicPlay.addOnPlayBackListener(
+        object : MusicPlay.OnPlayListener {
 
-        @SuppressLint("SetTextI18n")
-        override fun onPlayBegins(playMode: MusicPlay.PlayMode) =
-            onPlayButtonRedraw()
+            override fun onPlayBegins(playMode: MusicPlay.PlayMode) {}
+            override fun onPlayStop() {}
+            override fun onPlayEnd() = onPlayButtonRedraw()
+            override fun onPlayPause() {}
+            override fun onPlayContinues() {}
+            override fun onRest() {}
+            override fun onError() {}
 
-        override fun onPlayStop() = onPlayButtonRedraw()
-        override fun onPlayEnd() = onPlayButtonRedraw()
-        override fun onPlayPause() = onPlayButtonRedraw()
-        override fun onPlayContinues() = onPlayButtonRedraw()
-        override fun onRest() = onViewRedraw()
-        override fun onError() = onPlayButtonRedraw()
+            override fun onPlayModeChange(playModeType: Int) {
+                if (this@PlayingFragment.isVisible)
+                    viewModel.onPlayModeChange(this@PlayingFragment.requireView(), playModeType)
+            }
 
-        override fun onPlayModeChange(playModeType: Int) {
-            if (this@PlayingFragment.isVisible)
-                viewModel.onPlayModeChange(this@PlayingFragment.requireView(), playModeType)
-        }
+            @SuppressLint("SetTextI18n")
+            override fun onViewRedraw() {
+                //仅 Fragment 可见时更新视图
+                if (!this@PlayingFragment.isVisible) return
+                binding.playModel = viewModel
+                onPlayButtonRedraw()
+                title.value = viewModel.song.get()?.name?.get()
+            }
 
-        @SuppressLint("SetTextI18n")
-        override fun onViewRedraw() {
-            //仅 Fragment 可见时更新视图
-            if (!this@PlayingFragment.isVisible) return
-            binding.playModel = viewModel
-            onPlayButtonRedraw()
-            title.value = viewModel.song.get()?.name?.get()
-        }
+            fun onPlayButtonRedraw() = onPlayButtonRedraw(MusicPlay.playMode.isPlaying)
+            override fun onPlayButtonRedraw(isPlaying: Boolean) {
+                //仅 Fragment 可见时更新视图
+                if (!this@PlayingFragment.isVisible) return
+                //binding.playing = MusicPlay.isPlaying
+                if (isPlaying)
+                    binding.playButton.setImageResource(R.drawable.ic_pause_black_48dp)
+                else
+                    binding.playButton.setImageResource(R.drawable.ic_play_arrow_black_48dp)
+            }
 
-        fun onPlayButtonRedraw() {
-            //仅 Fragment 可见时更新视图
-            if (!this@PlayingFragment.isVisible) return
-            //binding.playing = MusicPlay.isPlaying
-            if (MusicPlay.playMode.isPlaying)
-                binding.playButton.setImageResource(R.drawable.ic_pause_black_48dp)
-            else
-                binding.playButton.setImageResource(R.drawable.ic_play_arrow_black_48dp)
-        }
-
-    })
+        })
 
 
 
@@ -163,7 +162,7 @@ class PlayingFragment : Fragment(), OnPageSelectedChange {
     override fun onDestroyView() {
         super.onDestroyView()
         //_binding = null
-        MusicPlay.removePlayListener(onPlayListener)
+        MusicPlay.removePlayBackListener(onPlayListener)
     }
 
     override fun onPageSelectedChange(hasFocus: Boolean, position: Int) {

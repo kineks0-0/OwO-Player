@@ -9,6 +9,7 @@ import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.os.Binder
+import android.os.Build
 import android.os.IBinder
 import android.support.v4.media.session.MediaSessionCompat
 import android.util.Log
@@ -33,7 +34,7 @@ class PlayService : Service() {
 
     private val playMode = MusicPlay.playMode
     val binder = PlayServiceBind()
-    private val onPlayBackListener = MusicPlay.addPlayBackListener { _,_ -> onPlay() }
+    private val onPlayBackListener = MusicPlay.addPlayBackListener { _, _ -> onPlay() }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         intent?.let {
@@ -100,7 +101,11 @@ class PlayService : Service() {
                 PendingIntent.getActivity(this, 0, notificationIntent, 0)
             }
 
-        val notificationBuilder = NotificationCompat.Builder(this, CHANNEL_SERVICE_IMPORTANCE)
+        val notificationBuilder =
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+                NotificationCompat.Builder(this, CHANNEL_SERVICE_IMPORTANCE)
+            else
+        NotificationCompat.Builder(this)
 
         val notification: Notification = notificationBuilder
             .setContentTitle(
@@ -170,8 +175,8 @@ class PlayService : Service() {
 
         fun onBindDestroy() {
             if (!MusicPlay.playMode.isPlaying) {
-                this@PlayService.stopSelf()
                 this@PlayService.stopForeground(true)
+                this@PlayService.stopSelf()
             }
         }
 
